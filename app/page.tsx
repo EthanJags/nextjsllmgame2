@@ -17,6 +17,8 @@ export default function Home() {
   const socket = getSocket();
   useEffect(() => {
   console.log("Socket: ", socket);
+
+  dispatch(setPlayerName(""));
   }, []);
   
 

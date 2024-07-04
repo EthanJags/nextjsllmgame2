@@ -4,6 +4,7 @@ import "./globals.css";
 import ClientProvider from "./ClientProvider";
 import Footer from "./components/Footer";
 import SocketWrapper from "./socketWrapper";
+import Navbar from "./components/Navbar";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -22,6 +23,7 @@ export default function RootLayout({
       <body className={inter.className}>
         <ClientProvider>
           <SocketWrapper>
+            <Navbar/>
           {children}
           <Footer/>
           </SocketWrapper>

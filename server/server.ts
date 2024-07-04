@@ -3,7 +3,8 @@ import { createServer } from 'http';
 import { Server } from 'socket.io';
 import next from 'next';
 import { v4 as uuidv4 } from 'uuid';
-// import prompts from 'prompts/prompts';
+import { Socket } from 'socket.io';
+import prompts from 'prompts/prompts';
 
 const dev = process.env.NODE_ENV !== 'production';
 const app = next({ dev });
@@ -33,6 +34,21 @@ function generateUniqueRoomCode(): number {
     return gameCode;
   }
 
+  function leaveAllGameRooms(socket: Socket) {
+    for (const room of Array.from(socket.rooms)) {
+      if (room !== socket.id ) {
+        socket.leave(room);
+      }
+    }
+  }
+
+  // return random question from prompts
+    function getRandomQuestion(): string {
+        const question = prompts[Math.floor(Math.random() * prompts.length)];
+        return question;
+    }
+
+//   io.use(wildcard());
   io.on('connection', (socket) => {
     console.log('a user connected (server)');
     // generate player id
@@ -55,17 +71,31 @@ function generateUniqueRoomCode(): number {
         highScorePlayer: null,
         };
     // add game to games
-    // games[gameCode] = game;
-        // emit room to client
+    games[gameCode] = game;
+    // ensure removal of past games
+    leaveAllGameRooms(socket);
+    // join game on socket
+    socket.join(gameCode.toString());
+    console.log('rooms', Array.from(socket.rooms));
+    // emit room to client
+    console.log('game created: ', game);
     socket.emit('gameCreated', game);
     });
     
     // Start Game
-    socket.on('startGame', () => {
-      console.log('game started');
-      // send first question to all players
-      socket.emit('gameStarted', 'What is the capital of France?');
-    });
+socket.on('startGame', () => {
+    console.log('game started');
+    
+    // Get the rooms this socket is in
+    const gameRoom = Array.from(socket.rooms)[1];
+    
+    if (gameRoom) {
+      // Send first question to all players in the game room
+      io.to(gameRoom).emit('gameStarted', 'What is the capital of France?');
+    } else {
+      console.error('Socket is not in any game room');
+    }
+  });
 
     // Join Game
     socket.on('joinGame', (data: { code: number, player: Player }) => {
@@ -77,8 +107,11 @@ function generateUniqueRoomCode(): number {
         if (code in games) {
             // add player to game
             games[code].players.push(player);
+            // join game on socket
+            socket.join(code.toString());
             // emit new players to all clients in game
-
+            console.log('add player to game: ', player.name);
+            io.to(code.toString()).emit('addPlayer', player);
             // emit to client
             console.log('valid code: ', games[code]);
             socket.emit('validCode', games[code]);
@@ -89,13 +122,52 @@ function generateUniqueRoomCode(): number {
         }
         });
 
+    // request game update
+    socket.on('requestGameUpdate', (code: number) => {
+        // console.log('game update requested', games);
+
+        if (code in games) {
+            // emit game update to client
+            // console.log('game update: ', games[code])
+            socket.emit('gameUpdate', games[code]);
+        } else {
+            console.log('game no longer active ', code);
+            socket.emit('gameNotActive');
+        }
+        });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     socket.on('disconnect', () => {
       console.log('user disconnected');
       // Additional logic to handle player disconnection
     });
   });
 
-  // Join Game
+
 
   httpServer
     .once("error", (err) => {

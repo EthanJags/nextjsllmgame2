@@ -10,7 +10,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "../store/store";
 import { useAppDispatch, useAppSelector } from "../store/constants/reduxTypes";
 import { getSocket, initSocket } from "../functions/socketManager";
-import { setGameSettings, addPlayer } from "../store/slices/gameSlice";
+import { setGameSettings, addPlayer, setGameCode } from "../store/slices/gameSlice";
 import { init } from "next/dist/compiled/webpack/webpack";
 
 
@@ -38,6 +38,8 @@ export default function HostSettings() {
     } else {
       router.push("/");
     }
+
+    
 }, [player.name, socketID]);
 
 if (isLoading) {
@@ -61,6 +63,7 @@ if (isLoading) {
     socket.once("gameCreated", (game: Game) => {
       // save the room to redux
       dispatch(setGameSettings(game.gameSettings));
+      dispatch(setGameCode(game.code));
       dispatch(addPlayer(player));
       // redirect to game page
       router.push(`/waitingRoom?code=${game.code}`);

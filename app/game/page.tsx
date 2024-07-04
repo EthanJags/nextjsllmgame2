@@ -10,6 +10,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "../store/store";
 import { useAppDispatch } from "../store/constants/reduxTypes";
 import { getSocket } from "../functions/socketManager";
+import Responding from "../components/gameScreens/Responding";
 
 
 export default function Game() {
@@ -35,9 +36,6 @@ if (isLoading) {
   return (
     <div>
       <h1>Game</h1>
-      <h1>Enter Code: {game.code} to join</h1>
-        <h2>Welcome {player.name}</h2>
-        <PlayersList/>
-        {player.isHost && <Link href="/hostSettings">Start Game</Link>}
+      <Responding />
     </div>
   )};

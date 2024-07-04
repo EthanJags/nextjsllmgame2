@@ -24,6 +24,9 @@ const gameSlice = createSlice({
         state.highScorePlayer = action.payload.highScorePlayer;
         state.gameSettings = action.payload.gameSettings;
         },
+    setGameCode: (state, action: PayloadAction<number>) => {
+        state.code = action.payload
+        },
     setGameSettings: (state, action: PayloadAction<GameSettings>) => {
         state.gameSettings = action.payload;
         },
@@ -50,6 +53,7 @@ const gameSlice = createSlice({
 });
 
 export const {
+    setGameCode,
     setGame,
     setGameSettings,
     updateHighScore,
