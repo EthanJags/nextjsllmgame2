@@ -67,6 +67,28 @@ function generateUniqueRoomCode(): number {
       socket.emit('gameStarted', 'What is the capital of France?');
     });
 
+    // Join Game
+    socket.on('joinGame', (data: { code: number, player: Player }) => {
+        const { code, player } = data
+        console.log('code', code)
+        console.log('player', player)
+        console.log('join game, code: ', code, ' id: ', player.id);
+        // check if game exists
+        if (code in games) {
+            // add player to game
+            games[code].players.push(player);
+            // emit new players to all clients in game
+
+            // emit to client
+            console.log('valid code: ', games[code]);
+            socket.emit('validCode', games[code]);
+        } else {
+            // emit error to client
+            console.log('invalid code: ', code);
+            socket.emit('invalidCode');
+        }
+        });
+
     socket.on('disconnect', () => {
       console.log('user disconnected');
       // Additional logic to handle player disconnection

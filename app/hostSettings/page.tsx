@@ -9,8 +9,9 @@ import PlayersList from "../components/PlayersList.";
 import { useSelector } from "react-redux";
 import { RootState } from "../store/store";
 import { useAppDispatch, useAppSelector } from "../store/constants/reduxTypes";
-import { getSocket } from "../functions/socketManager";
+import { getSocket, initSocket } from "../functions/socketManager";
 import { setGameSettings, addPlayer } from "../store/slices/gameSlice";
+import { init } from "next/dist/compiled/webpack/webpack";
 
 
 export default function HostSettings() {
@@ -18,6 +19,8 @@ export default function HostSettings() {
   const socket = getSocket();
   const player = useAppSelector(state => state.player);
   const [isLoading, setIsLoading] = useState(true);
+  const socketID = useAppSelector(state => state.socket.id);
+  // const isConnected = useAppSelector(state => state.socket.isConnected);
   const dispatch = useAppDispatch();
 
   // settings
@@ -25,14 +28,17 @@ export default function HostSettings() {
   const [timePerQuestion, setTimePerQuestion] = useState(30);
 
   useEffect(() => {
-    console.log("Player: ", player);
-    console.log("Socket: ", socket);
-    if (!player.name || !socket || !player.isHost) {
-      router.push("/");
+    console.log('socketID: ', socketID);
+    if (socketID && player.isHost && player.name) {
+      // reinitialize socket
+      const socket = initSocket(socketID);
+      console.log("Socket: ", socket);
+      console.log("Player: ", player);
+      setIsLoading(false);
     } else {
-        setIsLoading(false);
+      router.push("/");
     }
-}, [player.name, socket]);
+}, [player.name, socketID]);
 
 if (isLoading) {
     return <h1>Loading...</h1>;
@@ -52,7 +58,7 @@ if (isLoading) {
     socket.emit("createGame", gameSettings, player);
 
     // listener for game started, recieve room object
-    socket.on("gameCreated", (game: Game) => {
+    socket.once("gameCreated", (game: Game) => {
       // save the room to redux
       dispatch(setGameSettings(game.gameSettings));
       dispatch(addPlayer(player));
@@ -71,6 +77,7 @@ if (isLoading) {
           id="rounds" 
           value={rounds} 
           onChange={(e) => setRounds(Number(e.target.value))}
+        style={{ color: "black" }}
         >
 
           {[3, 5, 10, 15, 20].map(num => (
@@ -84,6 +91,7 @@ if (isLoading) {
           id="timePerQuestion" 
           value={timePerQuestion} 
           onChange={(e) => setTimePerQuestion(Number(e.target.value))}
+        style={{ color: "black" }}
         >
           {[15, 30, 45, 60, 90].map(num => (
             <option key={num} value={num}>{num}</option>

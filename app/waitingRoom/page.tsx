@@ -41,7 +41,7 @@ const handleStartClick = () => {
   socket.emit("startGame");
 
   // listener for acknocledgement of backend
-  socket.on("gameStarted", () => {
+  socket.once("gameStarted", () => {
     // redirect to game page
     router.push(`/game`);
   });

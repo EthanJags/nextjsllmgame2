@@ -6,6 +6,7 @@ import playerReducer from "./slices/playerSlice";
 import gameReducer from "./slices/gameSlice";
 import languageReducer from "./slices/languageSlice";
 import { createLogger } from 'redux-logger';
+import socketReducer from "./slices/socketSlice";
 
 const logger = createLogger({ level: 'log' });
 
@@ -21,7 +22,8 @@ const persistConfig = {
 const rootReducer = combineReducers({
   player: playerReducer,
   game: gameReducer,
-  language: languageReducer
+  language: languageReducer,
+  socket: socketReducer,
 });
 
 // Create a persisted reducer

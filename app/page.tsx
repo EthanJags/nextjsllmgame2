@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, use } from "react";
 import io, { Socket } from "socket.io-client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -15,8 +15,9 @@ export default function Home() {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const socket = getSocket();
+  useEffect(() => {
   console.log("Socket: ", socket);
-
+  }, []);
   
 
   function createPlayer({ isHost }: { isHost: boolean }) {

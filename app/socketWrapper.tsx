@@ -2,12 +2,11 @@
 
 import { useState, useEffect, useRef } from "react";
 import { io, Socket } from "socket.io-client";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useAppDispatch } from "./store/constants/reduxTypes";
-import { createSocket } from "./store/actions/socket";
-import { setSocket } from "./functions/socketManager";
+import { useAppDispatch, useAppSelector } from "./store/constants/reduxTypes";
+import { setConnected, setSocketId } from "./store/slices/socketSlice";
 import { setPlayerID } from "./store/slices/playerSlice";
+import { initSocket, getSocket, disconnectSocket } from "./functions/socketManager";
 
 export default function SocketWrapper({
   children,
@@ -16,38 +15,34 @@ export default function SocketWrapper({
 }) {
   console.log("SocketWrapper mounted");
   const dispatch = useAppDispatch();
+  const persistedId = useAppSelector(state => state.socket.id);
   const socketRef = useRef<Socket | null>(null);
 
   useEffect(() => {
     if (!socketRef.current) {
-      // connect to the server only if a connection doesn't exist
-      socketRef.current = io("http://localhost:3000");
+      socketRef.current = initSocket(persistedId);
       console.log("Socket: ", socketRef.current);
-      setSocket(socketRef.current);
+
+      socketRef.current.on('connect', () => {
+        dispatch(setConnected(true));
+        dispatch(setSocketId(socketRef.current?.id || null));
+      });
+
+      socketRef.current.on('disconnect', () => {
+        dispatch(setConnected(false));
+      });
 
       // listen for player id
       socketRef.current.once("player_id", (id: string) => {
         console.log("client Player ID: ", id);
         dispatch(setPlayerID(id));
       });
-
-      // Uncomment and modify these as needed
-      // socketRef.current.on("connect", () => {
-      //     console.log("Connected to server");
-      // });
-
-      // socketRef.current.on("updatePlayers", (players: Players) => {
-      //   console.log("Players: ", players);
-      //   dispatch({ type: "UPDATE_PLAYERS", payload: { players } });
-      // });
     }
     
     // Return a cleanup function
     return () => {
-      if (socketRef.current) {
-        socketRef.current.disconnect();
-        socketRef.current = null;
-      }
+      disconnectSocket();
+      socketRef.current = null;
     };
   }, [dispatch]);
 
