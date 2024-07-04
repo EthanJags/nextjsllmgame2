@@ -1,30 +1,33 @@
 declare interface Players {
-  [key: string]: Player | undefined;
+  [id: string]: Player;
 }
 
 declare interface Player {
-  id: ID;
-  name: string;
+  id: ID | null;
+  name: string | null;
   score: number;
   isHost: boolean;
   // Add other player properties here if needed
 }
 
-declare interface Rooms {
-  [code: string]: Room;
+declare interface Games {
+  [code: number]: Game;
 }
 
-declare interface Room {
+declare interface GameSettings {
+  // Add game settings here
+  rounds: number;
+  timePerQuestion: number;
+}
+
+declare interface Game {
   code: number;
-  name: string;
-  Players: Players;
+  players: [Player];
   highScore: number;
-  highScorePlayer: string;
+  highScorePlayer: string | null;
+  gameSettings: GameSettings;
 }
 
-interface ChangeLanguageAction {
-  type: typeof CHANGE_LANGUAGE;
-  payload: boolean;
-}
+
 
 declare type ID = string | undefined;

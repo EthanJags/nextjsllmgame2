@@ -1,6 +1,18 @@
-import React from "react";
+import React, { useEffect } from "react";
 
-export default function PlayersList({ players }: Players) {
+import { useAppSelector } from "../store/constants/reduxTypes";
+
+export default function PlayersList() {
+  const players = useAppSelector((state) => state.game.players);
+
+  useEffect(() => {
+    console.log("PlayersList mounted");
+    console.log(players);
+    return () => {
+      console.log("PlayersList unmounted");
+    };
+  });
+
   if (players === undefined) {
     return <div>No players</div>;
   }

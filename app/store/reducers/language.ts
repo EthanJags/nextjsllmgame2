@@ -1,4 +1,5 @@
-import { CHANGE_LANGUAGE } from "../constants/actionTypes";
+import { CHANGE_LANGUAGE } from "../constants/actionNames";
+import { ChangeLanguageAction } from "../constants/actionTypes";
 
 const languageReducer = (
   state = { isEnglish: false },

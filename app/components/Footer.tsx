@@ -1,6 +1,6 @@
 'use client';
 import React from "react";
-import { changeLanguage } from "../store/actions/changeLanguage";
+import { changeLanguage } from "../store/slices/languageSlice";
 import { useAppSelector, useAppDispatch } from "../store/constants/reduxTypes";
 
 const Footer: React.FC = () => {
@@ -16,7 +16,7 @@ const Footer: React.FC = () => {
       }}
     >
       <p>{isEnglish ? "Made by Ethan Jagoda" : "Hecho por Ethan Jagoda"}</p>
-      <button onClick={() => dispatch(changeLanguage(!isEnglish))}>
+      <button onClick={() => dispatch(changeLanguage())}>
         {isEnglish ? "Change to Spanish" : "Cambiar a Inglés"}
       </button>
     </footer>

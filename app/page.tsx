@@ -3,11 +3,50 @@
 import { useState, useEffect } from "react";
 import io, { Socket } from "socket.io-client";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useAppDispatch, useAppSelector } from "./store/constants/reduxTypes";
+import { getSocket } from "./functions/socketManager";
+import { setPlayerIsHost, setPlayerName } from "./store/slices/playerSlice";
 
-let socket: Socket;
+
 
 export default function Home() {
   const [name, setName] = useState<string>("");
+  const router = useRouter();
+  const dispatch = useAppDispatch();
+  const socket = getSocket();
+  console.log("Socket: ", socket);
+
+  
+
+  function createPlayer({ isHost }: { isHost: boolean }) {
+    if (!socket) {
+      console.error("Socket is undefined");
+      alert("Socket is undefined");
+      return;
+    }
+    if (name === "") {
+      alert("Please enter a name");
+      return;
+    }
+    // send player name and isHost to store
+    dispatch(setPlayerName(name));
+    dispatch(setPlayerIsHost(isHost));
+  };
+
+  const handleHostClick = () => {
+    createPlayer({ isHost: true })
+      // navigate to hostSettings
+    router.push("/hostSettings");
+  };
+  
+
+  const handleJoinClick = () => {
+    createPlayer( { isHost: false })
+    // navigate to join
+    router.push("/join");
+  }
+
 
   return (
     <div>
@@ -19,22 +58,8 @@ export default function Home() {
         placeholder="Enter your name"
         style={{ color: "black" }}
       />
-      <Link
-        href={{
-          pathname: "/host",
-          query: { name: name },
-        }}
-      >
-        <button>Host</button>
-      </Link>
-      <Link
-        href={{
-          pathname: "/Join",
-          query: { name: name },
-        }}
-      >
-        <button>Join</button>
-      </Link>
+      <button onClick={handleHostClick}>Host</button>
+      <button onClick={handleJoinClick}>Join</button>
     </div>
   );
 }
