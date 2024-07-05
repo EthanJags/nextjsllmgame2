@@ -4,7 +4,7 @@ import { Server } from 'socket.io';
 import next from 'next';
 import { v4 as uuidv4 } from 'uuid';
 import { Socket } from 'socket.io';
-import prompts from 'prompts/prompts';
+import prompts from './prompts/prompts';
 
 const dev = process.env.NODE_ENV !== 'production';
 const app = next({ dev });
@@ -12,7 +12,6 @@ const handler = app.getRequestHandler();
 
 const hostname = "localhost";
 const port = 3000;
-
 
 app.prepare().then(() => {
     console.log("Node app prepared")
@@ -48,11 +47,17 @@ function generateUniqueRoomCode(): number {
         return question;
     }
 
+// get the room this socket is in
+function getRoom(socket: Socket): number {
+    return Number(Array.from(socket.rooms)[1]);
+}
+
+
 //   io.use(wildcard());
   io.on('connection', (socket) => {
     console.log('a user connected (server)');
     // generate player id
-    const playerId = uuidv4();
+    const playerId = socket.id;
     socket.emit('player_id', playerId)
     console.log('server Player ID: ', playerId)
 
@@ -69,6 +74,10 @@ function generateUniqueRoomCode(): number {
         players: [player],
         highScore: 0,
         highScorePlayer: null,
+        answers: {},
+        gameActive: false,
+        currentStage: 'Answering',
+        currentQuestion: '',
         };
     // add game to games
     games[gameCode] = game;
@@ -87,11 +96,11 @@ socket.on('startGame', () => {
     console.log('game started');
     
     // Get the rooms this socket is in
-    const gameRoom = Array.from(socket.rooms)[1];
+    const gameRoom = getRoom(socket);
     
     if (gameRoom) {
       // Send first question to all players in the game room
-      io.to(gameRoom).emit('gameStarted', 'What is the capital of France?');
+      io.to(gameRoom.toString()).emit('gameStarted', 'What is the capital of France?');
     } else {
       console.error('Socket is not in any game room');
     }
@@ -137,9 +146,46 @@ socket.on('startGame', () => {
         });
 
 
+    // request Question
+    socket.on('requestQuestion', () => {
+        console.log('request question');
+        // Get the rooms this socket is in
+        const gameRoom = getRoom(socket);
+        // Get a random question
+        const question = getRandomQuestion();
+        // Send question to all players in the game room
+        console.log('question: ', question)
+        console.log('game room: ', gameRoom)
+        const timePerQuestion = 60;
+        io.to(gameRoom.toString()).emit('recieveQuestion', question, timePerQuestion);
+        setTimeout(() => {
+            io.to(gameRoom.toString()).emit('timeOver');
+        }, timePerQuestion * 1000);
+        });
 
-
-
+    // submit answer
+    socket.on('submitAnswer', (data: { answer: string }) => {
+        const answer = data.answer;
+        const gameRoom: number = getRoom(socket);
+        const game = games[gameRoom];
+        console.log('submit answer: ', data.answer);
+        const playerId = socket.id;
+        // store the answer
+        game.answers[playerId] = answer;
+        // check if all players have answered
+        const allPlayersAnswered = game.players.every(player => player.id in game.answers);
+        // if all players have answered, move to next stage
+        console.log('all players answered: ', allPlayersAnswered)
+        if (allPlayersAnswered) {
+            // send an array of randomized order of all answers to all players
+            const randomizedAnswers = Object.values(game.answers).sort(() => Math.random() - 0.5);
+            // emit event to all players in game Room and start timer
+            io.to(gameRoom.toString()).emit('allPlayersAnswered', randomizedAnswers, game.gameSettings.timePerQuestion);
+            setTimeout(() => {
+                io.to(gameRoom.toString()).emit('timeOver');
+            }, game.gameSettings.timePerQuestion * 1000);
+        }
+        });
 
 
 

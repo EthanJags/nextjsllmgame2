@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "npx tsx server/server.ts",
-    "debug": "DEBUG=* npx tsx server/server.ts",
+    "debug": "DEBUG=socket.io:client,socket.io:socket,socket.io:server npx tsx server/server.ts",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",

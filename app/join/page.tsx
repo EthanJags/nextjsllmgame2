@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "../store/constants/reduxTypes";
 import { getSocket, initSocket } from "../functions/socketManager";
-import { setGame } from "../store/slices/gameSlice";
+import { resetGame, setGame } from "../store/slices/gameSlice";
 
 export default function Join() {
   const router = useRouter();

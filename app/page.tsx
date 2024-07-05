@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "./store/constants/reduxTypes";
 import { getSocket } from "./functions/socketManager";
 import { setPlayerIsHost, setPlayerName } from "./store/slices/playerSlice";
+import { resetGame } from "./store/slices/gameSlice";
 
 
 
@@ -18,7 +19,8 @@ export default function Home() {
   useEffect(() => {
   console.log("Socket: ", socket);
 
-  dispatch(setPlayerName(""));
+  // dispatch(setPlayerName(""));
+  // dispatch(resetGame());
   }, []);
   
 

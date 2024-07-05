@@ -1,4 +1,4 @@
-export const prompts: string[] = [
+const prompts: string[] = [
     "Name a country that starts with the letter 'Z'.",
     "What is the capital city of Japan?",
     "Who painted the Mona Lisa?",
@@ -30,3 +30,4 @@ export const prompts: string[] = [
     "Which country is home to the Great Barrier Reef?",
     "Who wrote 'To Kill a Mockingbird'?",
   ];
+  export default prompts;

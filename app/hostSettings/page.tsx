@@ -10,7 +10,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "../store/store";
 import { useAppDispatch, useAppSelector } from "../store/constants/reduxTypes";
 import { getSocket, initSocket } from "../functions/socketManager";
-import { setGameSettings, addPlayer, setGameCode } from "../store/slices/gameSlice";
+import { setGameSettings, addPlayer, setGameCode, resetGame, setGame } from "../store/slices/gameSlice";
 import { init } from "next/dist/compiled/webpack/webpack";
 
 
@@ -58,12 +58,12 @@ if (isLoading) {
 
     // emit start game event
     socket.emit("createGame", gameSettings, player);
+    dispatch(resetGame());
 
     // listener for game started, recieve room object
     socket.once("gameCreated", (game: Game) => {
       // save the room to redux
-      dispatch(setGameSettings(game.gameSettings));
-      dispatch(setGameCode(game.code));
+      dispatch(setGame(game));
       dispatch(addPlayer(player));
       // redirect to game page
       router.push(`/waitingRoom?code=${game.code}`);

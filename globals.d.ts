@@ -3,7 +3,7 @@ declare interface Players {
 }
 
 declare interface Player {
-  id: ID | null;
+  id: ID;
   name: string | null;
   score: number;
   isHost: boolean;
@@ -20,14 +20,29 @@ declare interface GameSettings {
   timePerQuestion: number;
 }
 
+declare type GameStates = 'Answering' | 'Choosing' | 'AwaitingResponses';
 declare interface Game {
   code: number;
-  players: [Player];
+  players: Player[];
   highScore: number;
   highScorePlayer: string | null;
   gameSettings: GameSettings;
+  answers: { [playerId: string]: string };
+  gameActive: boolean;
+  currentStage: GameStates;
+  currentQuestion: string;
 }
 
+// declare interface BackendGame {
+//   code: number;
+//   players: Player[];
+//   highScore: number;
+//   highScorePlayer: string | null;
+//   gameSettings: GameSettings;
+//   answers: { [playerId: string]: string };
+//   gameActive: boolean;
+//   currentStage: GameStates;
+//   currentQuestion: string;
+// }
 
-
-declare type ID = string | undefined;
+declare type ID = string;

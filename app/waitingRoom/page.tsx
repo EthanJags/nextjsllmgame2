@@ -10,7 +10,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "../store/store";
 import { useAppDispatch } from "../store/constants/reduxTypes";
 import { getSocket, initSocket } from "../functions/socketManager";
-import { setGame, addPlayer } from "../store/slices/gameSlice";
+import { setGame, addPlayer, setCurrentQuestion } from "../store/slices/gameSlice";
 
 
 export default function WaitingRoom() {
@@ -34,12 +34,6 @@ export default function WaitingRoom() {
       console.log("Socket: ", socket);
       setIsLoading(false);
     
-   
-
-    // Remove existing listeners
-    socket.off("gameUpdate");
-    socket.off("gameNotActive");
-
     // check for game updates
     console.log("Requesting game update", game.code)
     socket.emit("requestGameUpdate", game.code);
@@ -64,7 +58,8 @@ export default function WaitingRoom() {
     });
 
     // listener for acknocledgement of backend
-  socket.once("gameStarted", () => {
+  socket.once("gameStarted", (question: string) => {
+    dispatch(setCurrentQuestion(question));
     // redirect to game page
     router.push(`/game`);
   });

@@ -2,7 +2,7 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 
 const initialState: Player = {
-  id: null,
+  id: '',
   name: null,
   score: 0,
   isHost: false,
@@ -24,9 +24,12 @@ const playerSlice = createSlice({
     setPlayerIsHost: (state, action: PayloadAction<boolean>) => {
       state.isHost = action.payload;
     },
-  },
+    resetPlayer: (state) => {
+        state = initialState;
+    },
+  }
 });
 
-export const { setPlayerID, setPlayerName, setPlayerScore, setPlayerIsHost } = playerSlice.actions;
+export const { setPlayerID, setPlayerName, setPlayerScore, setPlayerIsHost, resetPlayer } = playerSlice.actions;
 
 export default playerSlice.reducer;
