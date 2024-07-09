@@ -23,11 +23,11 @@ export default function RootLayout({
       <body className={inter.className}>
         <ClientProvider>
           <SocketWrapper>
-            <Navbar/>
-          {children}
-          <Footer/>
+            <Navbar />
+            {children}
+            <Footer />
           </SocketWrapper>
-          </ClientProvider>
+        </ClientProvider>
       </body>
     </html>
   );

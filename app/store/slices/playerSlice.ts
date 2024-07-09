@@ -1,15 +1,14 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 const initialState: Player = {
-  id: '',
-  name: null,
+  id: "",
+  name: '',
   score: 0,
   isHost: false,
 };
 
 const playerSlice = createSlice({
-  name: 'player',
+  name: "player",
   initialState,
   reducers: {
     setPlayerID: (state, action: PayloadAction<string>) => {
@@ -25,11 +24,17 @@ const playerSlice = createSlice({
       state.isHost = action.payload;
     },
     resetPlayer: (state) => {
-        state = initialState;
+      state = initialState;
     },
-  }
+  },
 });
 
-export const { setPlayerID, setPlayerName, setPlayerScore, setPlayerIsHost, resetPlayer } = playerSlice.actions;
+export const {
+  setPlayerID,
+  setPlayerName,
+  setPlayerScore,
+  setPlayerIsHost,
+  resetPlayer,
+} = playerSlice.actions;
 
 export default playerSlice.reducer;

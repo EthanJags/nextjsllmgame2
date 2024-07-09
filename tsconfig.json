@@ -21,6 +21,15 @@
       "@/*": ["./*"]
     }
   },
-  "include": ["globals.d.ts", "server/**/*.ts", "next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "app/hostSettings", "app/waitingRoom"],
+  "include": [
+    "globals.d.ts",
+    "server/**/*.ts",
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    "app/hostSettings",
+    "app/waitingRoom"
+  ],
   "exclude": ["node_modules"]
 }

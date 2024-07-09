@@ -6,7 +6,11 @@ import { useRouter } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "./store/constants/reduxTypes";
 import { setConnected, setSocketId } from "./store/slices/socketSlice";
 import { setPlayerID } from "./store/slices/playerSlice";
-import { initSocket, getSocket, disconnectSocket } from "./functions/socketManager";
+import {
+  initSocket,
+  getSocket,
+  disconnectSocket,
+} from "./functions/socketManager";
 
 export default function SocketWrapper({
   children,
@@ -15,7 +19,7 @@ export default function SocketWrapper({
 }) {
   console.log("SocketWrapper mounted");
   const dispatch = useAppDispatch();
-  const persistedId = useAppSelector(state => state.socket.id);
+  const persistedId = useAppSelector((state) => state.socket.id);
   const socketRef = useRef<Socket | null>(null);
 
   useEffect(() => {
@@ -23,12 +27,12 @@ export default function SocketWrapper({
       socketRef.current = initSocket(persistedId);
       console.log("Socket: ", socketRef.current);
 
-      socketRef.current.on('connect', () => {
+      socketRef.current.on("connect", () => {
         dispatch(setConnected(true));
         dispatch(setSocketId(socketRef.current?.id || null));
       });
 
-      socketRef.current.on('disconnect', () => {
+      socketRef.current.on("disconnect", () => {
         dispatch(setConnected(false));
       });
 
@@ -38,7 +42,7 @@ export default function SocketWrapper({
         dispatch(setPlayerID(id));
       });
     }
-    
+
     // Return a cleanup function
     return () => {
       disconnectSocket();

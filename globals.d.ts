@@ -1,10 +1,10 @@
-declare interface Players {
-  [id: string]: Player;
-}
+// declare interface Players {
+//   [id: string]: Player;
+// }
 
 declare interface Player {
   id: ID;
-  name: string | null;
+  name: string;
   score: number;
   isHost: boolean;
   // Add other player properties here if needed
@@ -20,17 +20,41 @@ declare interface GameSettings {
   timePerQuestion: number;
 }
 
-declare type GameStates = 'Answering' | 'Choosing' | 'AwaitingResponses';
+declare interface Answer {
+  text: string;
+  submittedBy: ID;
+  votes: ID[];
+}
+
+declare interface LatestAnswers {
+  [playerId: ID]: Answer;
+}
+
+declare type GameStates =
+  | "Answering"
+  | "Voting"
+  | "AwaitingResponses"
+  | "AwaitingVotes"
+  | "Results"
+  | "Score"
+  | "End";
+
+declare interface ChatMessage {
+  sender: string;
+  message: string;
+  timestamp: Date;
+}
+
 declare interface Game {
   code: number;
   players: Player[];
-  highScore: number;
-  highScorePlayer: string | null;
   gameSettings: GameSettings;
-  answers: { [playerId: string]: string };
+  latestAnswers: LatestAnswers;
   gameActive: boolean;
   currentStage: GameStates;
+  currentRound: number;
   currentQuestion: string;
+  chatHistory: ChatMessage[];
 }
 
 // declare interface BackendGame {

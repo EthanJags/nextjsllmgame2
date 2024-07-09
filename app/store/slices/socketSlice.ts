@@ -1,5 +1,5 @@
 // socketSlice.ts
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 interface SocketState {
   isConnected: boolean;
@@ -12,7 +12,7 @@ const initialState: SocketState = {
 };
 
 const socketSlice = createSlice({
-  name: 'socket',
+  name: "socket",
   initialState,
   reducers: {
     setConnected: (state, action: PayloadAction<boolean>) => {
@@ -24,7 +24,7 @@ const socketSlice = createSlice({
     disconnectSocket: (state) => {
       state.isConnected = false;
       state.id = null;
-    }
+    },
   },
 });
 

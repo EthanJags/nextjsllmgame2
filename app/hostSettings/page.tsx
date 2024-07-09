@@ -1,111 +1,113 @@
 "use client";
 
-import { useState, useEffect, use } from "react";
-import io, { Socket } from "socket.io-client";
-import Link from "next/link";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useSearchParams } from "next/navigation";
-import PlayersList from "../components/PlayersList.";
-import { useSelector } from "react-redux";
-import { RootState } from "../store/store";
 import { useAppDispatch, useAppSelector } from "../store/constants/reduxTypes";
 import { getSocket, initSocket } from "../functions/socketManager";
-import { setGameSettings, addPlayer, setGameCode, resetGame, setGame } from "../store/slices/gameSlice";
-import { init } from "next/dist/compiled/webpack/webpack";
-
+import { setGame, addPlayer, resetGame } from "../store/slices/gameSlice";
 
 export default function HostSettings() {
   const router = useRouter();
   const socket = getSocket();
-  const player = useAppSelector(state => state.player);
+  const player = useAppSelector((state) => state.player);
   const [isLoading, setIsLoading] = useState(true);
-  const socketID = useAppSelector(state => state.socket.id);
-  // const isConnected = useAppSelector(state => state.socket.isConnected);
+  const socketID = useAppSelector((state) => state.socket.id);
   const dispatch = useAppDispatch();
 
-  // settings
   const [rounds, setRounds] = useState(5);
   const [timePerQuestion, setTimePerQuestion] = useState(30);
 
   useEffect(() => {
-    console.log('socketID: ', socketID);
     if (socketID && player.isHost && player.name) {
-      // reinitialize socket
       const socket = initSocket(socketID);
-      console.log("Socket: ", socket);
-      console.log("Player: ", player);
       setIsLoading(false);
     } else {
       router.push("/");
     }
+  }, [player.name, socketID, player.isHost, router]);
 
-    
-}, [player.name, socketID]);
-
-if (isLoading) {
-    return <h1>Loading...</h1>;
-}
-
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        Loading...
+      </div>
+    );
+  }
 
   const handleStartClick = () => {
     if (!socket) return;
-    // create gameSettings object
-    const gameSettings: GameSettings = {
-      rounds: rounds,
-      timePerQuestion: timePerQuestion
-    }
-    console.log("Game Settings: ", gameSettings)
-
-    // emit start game event
+    const gameSettings = { rounds, timePerQuestion };
     socket.emit("createGame", gameSettings, player);
     dispatch(resetGame());
 
-    // listener for game started, recieve room object
-    socket.once("gameCreated", (game: Game) => {
-      // save the room to redux
+    socket.once("gameCreated", (game) => {
       dispatch(setGame(game));
       dispatch(addPlayer(player));
-      // redirect to game page
       router.push(`/waitingRoom?code=${game.code}`);
-  });
-}
+    });
+  };
 
   return (
-    <div>
-      <h1>Welcome, {player.name}!</h1>
-      <h2>Game Settings</h2>
-      <div>
-        <label htmlFor="rounds">Number of Rounds:</label>
-        <select 
-          id="rounds" 
-          value={rounds} 
-          onChange={(e) => setRounds(Number(e.target.value))}
-        style={{ color: "black" }}
-        >
+    <div className="min-h-screen bg-background-light flex flex-col items-center justify-center p-4">
+      <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
+        <h1 className="text-2xl font-bold mb-6 text-primary-dark text-center">
+          Welcome, {player.name}!
+        </h1>
+        <h2 className="text-xl font-semibold mb-4 text-gray-700">
+          Game Settings
+        </h2>
 
-          {[3, 5, 10, 15, 20].map(num => (
-            <option key={num} value={num}>{num}</option>
-          ))}
-        </select>
-      </div>
-      <div>
-        <label htmlFor="timePerQuestion">Time per Question (seconds):</label>
-        <select 
-          id="timePerQuestion" 
-          value={timePerQuestion} 
-          onChange={(e) => setTimePerQuestion(Number(e.target.value))}
-        style={{ color: "black" }}
+        <div className="space-y-4">
+          <div className="flex flex-col">
+            <label
+              htmlFor="rounds"
+              className="mb-2 text-sm font-medium text-gray-600"
+            >
+              Number of Rounds:
+            </label>
+            <select
+              id="rounds"
+              value={rounds}
+              onChange={(e) => setRounds(Number(e.target.value))}
+              className="p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary text-gray-800"
+            >
+              {[3, 5, 10, 15, 20].map((num) => (
+                <option key={num} value={num}>
+                  {num}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="flex flex-col">
+            <label
+              htmlFor="timePerQuestion"
+              className="mb-2 text-sm font-medium text-gray-600"
+            >
+              Time per Question (seconds):
+            </label>
+            <select
+              id="timePerQuestion"
+              value={timePerQuestion}
+              onChange={(e) => setTimePerQuestion(Number(e.target.value))}
+              className="p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary text-gray-800"
+            >
+              {[15, 30, 45, 60, 90].map((num) => (
+                <option key={num} value={num}>
+                  {num}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        <button
+          onClick={handleStartClick}
+          className="w-full mt-6 bg-secondary hover:bg-secondary-dark text-white font-bold py-2 px-4 rounded transition duration-300 ease-in-out"
         >
-          {[15, 30, 45, 60, 90].map(num => (
-            <option key={num} value={num}>{num}</option>
-          ))}
-        </select>
+          Create Game
+        </button>
       </div>
-      <button onClick={handleStartClick}>
-        Start Game
-      </button>
     </div>
   );
-
-
 }

@@ -1,13 +1,13 @@
 // socketManager.ts
-import io, { Socket } from 'socket.io-client';
+import io, { Socket } from "socket.io-client";
 
 let socket: Socket | null = null;
 
 export const initSocket = (persistedId: string | null) => {
-    console.log("initSocket called", persistedId)
+  console.log("initSocket called", persistedId);
   if (!socket) {
-    socket = io('http://localhost:3000', {
-      query: persistedId ? { id: persistedId } : undefined
+    socket = io("http://localhost:3000", {
+      query: persistedId ? { id: persistedId } : undefined,
     });
   }
   return socket;

@@ -1,6 +1,5 @@
 // import { CREATE_ROOM, SET_PLAYER, UPDATE_PLAYERS } from "../constants/actionNames";
 // import { RoomActionTypes, SetPlayerAction } from "../constants/actionTypes";
-  
 
 // const room = (
 //   state: Partial<Game> = null,

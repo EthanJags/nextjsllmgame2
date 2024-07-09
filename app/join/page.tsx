@@ -18,7 +18,7 @@ export default function Join() {
   const socketID = useAppSelector((state) => state.socket.id);
 
   useEffect(() => {
-    console.log('socketID: ', socketID);
+    console.log("socketID: ", socketID);
     if (socketID && player.name) {
       const socket = initSocket(socketID);
       console.log("Socket: ", socket);
@@ -64,73 +64,45 @@ export default function Join() {
   };
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex justify-center items-center h-screen">
+        Loading...
+      </div>
+    );
   }
 
   return (
-    <div style={styles.container}>
-      <h1 style={styles.title}>Welcome, {player.name}!</h1>
-      <div style={styles.inputContainer}>
-        <input
-          type="number"
-          id="codeInput"
-          value={code}
-          style={styles.input}
-          onChange={(e) => setCode(e.target.value)}
-          placeholder="Enter your code here"
-          disabled={isSubmitting}
-        />
-        <button 
-          onClick={handleSubmit} 
-          style={styles.button} 
-          disabled={isSubmitting || code.length === 0}
-        >
-          {isSubmitting ? "Joining..." : "Join Game"}
-        </button>
+    <div className="min-h-screen bg-background-light flex flex-col items-center justify-center p-4">
+      <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
+        <h1 className="text-2xl font-bold mb-6 text-primary-dark text-center">
+          Welcome, {player.name}!
+        </h1>
+        <div className="space-y-4">
+          <input
+            type="text"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            id="codeInput"
+            value={code}
+            onChange={(e) => setCode(e.target.value)}
+            placeholder="Enter your code here"
+            disabled={isSubmitting}
+            className="w-full px-4 py-2 border border-background-dark rounded-md focus:outline-none focus:ring-2 focus:ring-primary text-text-primary placeholder-text-placeholder appearance-none"
+          />
+          <button
+            onClick={handleSubmit}
+            className={`w-full py-2 px-4 rounded-md text-white transition duration-300 ${
+              isSubmitting || code.length === 0
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-secondary hover:bg-secondary-dark"
+            }`}
+            disabled={isSubmitting || code.length === 0}
+          >
+            {isSubmitting ? "Joining..." : "Join Game"}
+          </button>
+        </div>
+        {error && <p className="mt-4 text-red-500 text-center">{error}</p>}
       </div>
-      {error && <p style={styles.error}>{error}</p>}
     </div>
   );
 }
-
-const styles = {
-  container: {
-    display: 'flex',
-    flexDirection: 'column' as const,
-    alignItems: 'center',
-    padding: '20px',
-  },
-  title: {
-    marginBottom: '20px',
-  },
-  inputContainer: {
-    display: 'flex',
-    flexDirection: 'column' as const,
-    alignItems: 'center',
-    width: '100%',
-    maxWidth: '300px',
-  },
-  input: {
-    width: '100%',
-    padding: '10px',
-    marginBottom: '10px',
-    borderRadius: '4px',
-    border: '1px solid #ccc',
-    fontSize: '16px',
-    color: 'black',
-  },
-  button: {
-    width: '100%',
-    padding: '10px',
-    backgroundColor: '#4CAF50',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
-    fontSize: '16px',
-    cursor: 'pointer',
-  },
-  error: {
-    color: 'red',
-    marginTop: '10px',
-  },
-};

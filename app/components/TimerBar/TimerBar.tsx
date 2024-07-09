@@ -1,5 +1,5 @@
-import React from 'react';
-import styles from './TimerBar.module.css';
+import React from "react";
+import styles from "./TimerBar.module.css";
 
 interface TimerBarProps {
   timeRemaining: number;
@@ -11,8 +11,8 @@ const TimerBar: React.FC<TimerBarProps> = ({ timeRemaining, totalTime }) => {
 
   return (
     <div className={styles.timerBarContainer}>
-      <div 
-        className={styles.timerBar} 
+      <div
+        className={styles.timerBar}
         style={{ width: `${percentageRemaining}%` }}
       />
       <h1>{timeRemaining} seconds left</h1>
