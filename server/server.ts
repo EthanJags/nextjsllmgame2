@@ -26,7 +26,7 @@ const app = next({ dev });
 const handler = app.getRequestHandler();
 
 const hostname = "localhost";
-const port = 3000;
+const PORT = process.env.PORT || 3000; // process.env.PORT is for Heroku
 
 function getSocketIdFromPlayerId(playerId: ID) {
   console.log("playerConnections: ", playerConnections);
@@ -438,7 +438,7 @@ app.prepare().then(() => {
       console.error(err);
       process.exit(1);
     })
-    .listen(port, () => {
-      console.log(`> Ready on http://${hostname}:${port}`);
+    .listen(PORT, () => {
+      console.log(`> Ready on http://${hostname}:${PORT}`);
     });
 });
