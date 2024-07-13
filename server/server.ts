@@ -4,7 +4,6 @@ import { Server } from "socket.io";
 import next from "next";
 import { v4 as uuidv4 } from "uuid";
 import { Socket } from "socket.io";
-import prompts from "./prompts/prompts";
 import { getRoom, generateUniqueRoomCode, getRandomQuestion, leaveAllGameRooms } from "./utils";
 import { current } from "@reduxjs/toolkit";
 import { startTimer, cancelTimer } from "./utils/timerManager";
@@ -158,7 +157,7 @@ app.prepare().then(() => {
         // Set current round to 1
         game.currentRound = 1;
         // Set current question to getCurrentQuestion
-        game.currentQuestion = getRandomQuestion(prompts);
+        game.currentQuestion = getRandomQuestion(game.gameSettings.promptDeck);
         // Set latest answers to empty object
         game.latestAnswers = {};
         // set time remaining to timePerQuestion
@@ -282,7 +281,7 @@ app.prepare().then(() => {
       // increment round
       game.currentRound++;
       // get next question
-      const question = getRandomQuestion(prompts);
+      const question = getRandomQuestion(game.gameSettings.promptDeck);
       // set current question
       game.currentQuestion = question;
       // set current stage to answering
@@ -306,23 +305,6 @@ app.prepare().then(() => {
         console.log("game no longer active ", code);
         socket.emit("gameNotActive");
       }
-    });
-
-    // request Question
-    socket.on("requestQuestion", () => {
-      console.log("request question");
-      // Get the rooms this socket is in
-      const gameRoom = getRoom(socket);
-      // Get a random question
-      const question = getRandomQuestion(prompts);
-      // Send question to all players in the game room
-      console.log("question: ", question);
-      console.log("game room: ", gameRoom);
-      const timePerQuestion = 60;
-      io.to(gameRoom.toString()).emit("recieveQuestion", question, timePerQuestion);
-      setTimeout(() => {
-        io.to(gameRoom.toString()).emit("timeOver");
-      }, timePerQuestion * 1000);
     });
 
     // submit answer

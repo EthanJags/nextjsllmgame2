@@ -11,7 +11,11 @@ const Footer: React.FC = () => {
     <footer className="py-6 px-4 border-t border-background-dark bg-white">
       <div className="container mx-auto flex flex-col sm:flex-row justify-between items-center">
         <p className="text-sm text-gray-600 mb-4 sm:mb-0">
-          {isEnglish ? "Made by Ethan Jagoda" : "Hecho por Ethan Jagoda"}
+          {isEnglish ? (
+            <>Made by <a href="https://ethanjagoda.com" target="_blank" rel="noopener noreferrer" className="underline">Ethan Jagoda</a></>
+          ) : (
+            <>Hecho por <a href="https://ethanjagoda.com" target="_blank" rel="noopener noreferrer" className="underline">Ethan Jagoda</a></>
+          )}
         </p>
         <button
           onClick={() => dispatch(changeLanguage())}

@@ -81,11 +81,6 @@ export default function Game() {
     }
   }, [socketID]);
 
-  const fetchQuestion = () => {
-    if (!socket) return;
-    socket.emit("requestQuestion", { gameCode: game.code });
-  };
-
   useEffect(() => {
     console.log("current Stage: ", currentStage);
   }, [currentStage]);

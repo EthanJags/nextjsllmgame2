@@ -1,6 +1,7 @@
 // server/src/utils.ts
 
 import { Socket } from "socket.io";
+import { standard, adultDirty, familyFriendly } from "./prompts/prompts";
 
 export function getRoom(socket: Socket): number {
   const room = Number(Array.from(socket.rooms)[1]);
@@ -28,7 +29,21 @@ export function leaveAllGameRooms(socket: Socket) {
   }
 }
 
-export function getRandomQuestion(prompts: string[]): string {
+export function getRandomQuestion(promptDeck: string): string {
+  let prompts: string[];
+  switch (promptDeck) {
+    case "standard":
+      prompts = standard;
+      break;
+    case "adultDirty":
+      prompts = adultDirty;
+      break;
+    case "familyFriendly":
+      prompts = familyFriendly;
+      break;
+    default:
+      prompts = standard;
+  }
   return prompts[Math.floor(Math.random() * prompts.length)];
 }
 
