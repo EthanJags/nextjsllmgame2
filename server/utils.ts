@@ -33,4 +33,3 @@ export function getRandomQuestion(prompts: string[]): string {
 }
 
 // timer utils
-

@@ -2,6 +2,8 @@
 
 import React from "react";
 import { useRouter } from "next/navigation";
+import { useAppDispatch, useAppSelector } from "../store/constants/reduxTypes";
+import DarkModeToggle from "./DarkModeToggle";
 
 const Navbar: React.FC = () => {
   const router = useRouter();
@@ -19,6 +21,7 @@ const Navbar: React.FC = () => {
         >
           Home
         </button>
+        <DarkModeToggle />
       </div>
     </nav>
   );

@@ -8,8 +8,8 @@ const EndGame: React.FC = () => {
 
   return (
     <div className="end-game-container">
-      <h1>Game Over</h1>
-      <p>Thanks for playing!</p>
+      <h1 className="text-black">Game Over</h1>
+      <p className="text-black">Thanks for playing!</p>
       <Leaderboard players={game.players} />
       {/* add play again functionality that links to the waiting room */}
     </div>

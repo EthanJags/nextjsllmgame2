@@ -6,6 +6,7 @@ const config: Config = {
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
+  darkMode: 'class', // Enable class-based dark mode
   theme: {
     extend: {
       backgroundImage: {
@@ -32,9 +33,16 @@ const config: Config = {
           primary: "#1F2937", // equivalent to gray-800
           placeholder: "#9CA3AF", // equivalent to gray-400
         },
+        // Add specific dark mode colors
+        dark: {
+          background: "#1F2937", // dark background
+          text: "#F9FAFB", // light text for dark mode
+        },
       },
     },
   },
-  plugins: [],
+  plugins: [
+  ],
 };
+
 export default config;

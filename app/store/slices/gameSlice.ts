@@ -14,12 +14,17 @@ const initialState: Game = {
   gameSettings: {
     rounds: 5,
     timePerQuestion: 30,
+    timePerVote: 20,
+    timePerResults: 15,
+    timePerScore: 10,
+    promptDeck: "standard",
   },
   latestAnswers: {},
   gameActive: false,
   currentStage: "Answering",
   currentRound: 1,
   currentQuestion: "question",
+  timeRemaining: 0,
   chatHistory: [],
 };
 
@@ -30,12 +35,17 @@ const resetState: Game = {
   gameSettings: {
     rounds: 5,
     timePerQuestion: 30,
+    timePerVote: 20,
+    timePerResults: 15,
+    timePerScore: 10,
+    promptDeck: "standard",
   },
   latestAnswers: {},
   gameActive: false,
   currentStage: "Answering",
   currentRound: 1,
   currentQuestion: "question",
+  timeRemaining: 0,
   chatHistory: [],
 };
 
@@ -52,6 +62,7 @@ const gameSlice = createSlice({
       state.currentStage = action.payload.currentStage;
       state.currentQuestion = action.payload.currentQuestion;
       state.currentRound = action.payload.currentRound;
+      state.timeRemaining = action.payload.timeRemaining;
     },
     setGameCode: (state, action: PayloadAction<number>) => {
       state.code = action.payload;

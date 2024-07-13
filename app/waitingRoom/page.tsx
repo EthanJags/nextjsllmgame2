@@ -5,7 +5,7 @@ import io, { Socket } from "socket.io-client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
-import PlayersList from "../components/PlayersList.";
+import PlayersList from "../components/PlayersList";
 import { useSelector } from "react-redux";
 import { RootState } from "../store/store";
 import { useAppDispatch } from "../store/constants/reduxTypes";

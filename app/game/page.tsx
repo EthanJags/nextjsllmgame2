@@ -5,7 +5,7 @@ import io, { Socket } from "socket.io-client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
-import PlayersList from "../components/PlayersList.";
+import PlayersList from "../components/PlayersList";
 import { RootState } from "../store/store";
 import { useAppDispatch, useAppSelector } from "../store/constants/reduxTypes";
 import { getSocket, initSocket } from "../functions/socketManager";
@@ -13,12 +13,15 @@ import Answering from "../components/gameScreens/Answering";
 import AwaitingResponses from "../components/gameScreens/AwaitingResponses";
 import { time } from "console";
 import TimerBar from "../components/TimerBar/TimerBar";
-import { setCurrentStage, setGame } from "../store/slices/gameSlice";
+import { resetGame, setCurrentStage, setGame } from "../store/slices/gameSlice";
 import Voting from "../components/gameScreens/Voting";
 import AwaitingVotes from "../components/gameScreens/AwaitingVotes";
 import Score from "../components/gameScreens/Score";
 import EndGame from "../components/gameScreens/EndGame";
 import Results from "../components/gameScreens/Results";
+import PlayerInfo from "../components/PlayerInfo";
+
+
 
 export default function Game() {
   const router = useRouter();
@@ -28,14 +31,15 @@ export default function Game() {
   const [isLoading, setIsLoading] = useState(false);
   const game = useAppSelector((state) => state.game);
   const currentStage = useAppSelector((state) => state.game.currentStage);
-  const [timeRemaining, setTimeRemaining] = useState<number>(0);
+  const [timeRemaining, setTimeRemaining] = useState<number>(30);
   const [timerActive, setTimerActive] = useState<boolean>(false);
-  const [totalTime, setTotalTime] = useState<number>(0);
+  // const [totalTime, setTotalTime] = useState<number>(game.gameSettings.timePerQuestion);
   const socketID = useAppSelector((state) => state.socket.id);
   const playerId = useAppSelector((state) => state.player.id);
+  const isHost = useAppSelector((state) => state.player.isHost);
+  const [showPlayerInfo, setShowPlayerInfo] = useState(false);
+  const [error, setError] = useState<string>("");
   const alertShown = useRef(false);
-
-  
 
   useEffect(() => {
     if (socketID && game.code !== -1) {
@@ -48,7 +52,12 @@ export default function Game() {
 
       // if code is valid
       socket.on("gameUpdate", (data: { game: Game; action?: string }) => {
-        const { game } = data;
+        const { game, action } = data;
+        if (action === "resetAnsweringTimer") {
+          setError("Not enough answers, timer has been reset, must have at least 2 submissions.")
+        } else {
+          setError("");
+        }
         dispatch(setGame(game));
         if (!game.gameActive) {
           console.log("Game no longer active");
@@ -100,6 +109,9 @@ export default function Game() {
     return () => clearInterval(interval);
   }, [timerActive, timeRemaining, socket, game.code]);
 
+
+  
+
   if (isLoading) {
     return <div className="flex justify-center items-center h-screen">Loading...</div>;
   }
@@ -107,6 +119,15 @@ export default function Game() {
   if (!socket) {
     return <div className="flex justify-center items-center h-screen">Socket is undefined</div>;
   }
+
+  const handleLeaveGame = () => {
+    if (window.confirm(`Are you sure you want to ${isHost ? "end" : "leave"} the game?`)) {
+    socket.emit("leaveGame", { playerId: player.id });
+    dispatch(resetGame());
+    router.push("/");
+    }
+  };
+  
 
   const renderGameContent = () => {
     switch (currentStage) {
@@ -129,6 +150,10 @@ export default function Game() {
     }
   };
 
+  const toggleShowPlayerInfo = () => {
+    setShowPlayerInfo(!showPlayerInfo);
+  }
+
   return (
     <div className="min-h-screen bg-indigo-600 p-4">
       {/* Game Info Header */}
@@ -136,7 +161,7 @@ export default function Game() {
         <div className="flex justify-between items-center">
           <div>
             <p className="font-bold text-lg text-indigo-700">{player.name}</p>
-            <p className="text-sm text-gray-600">Score: {player.score}</p>
+            <p className="font-bold text-sm text-gray-600">Score: {player.score}</p>
           </div>
           <div className="text-right">
             <p className="text-sm text-gray-600">Round</p>
@@ -146,12 +171,39 @@ export default function Game() {
           </div>
         </div>
         <div className="mt-4">
-          <TimerBar timeRemaining={timeRemaining} totalTime={totalTime} />
+          <TimerBar timeRemaining={timeRemaining} />
         </div>
       </div>
 
       {/* Game Content */}
-      <div className="bg-white rounded-lg shadow-md p-6">{renderGameContent()}</div>
+      <div className="bg-white rounded-lg shadow-md p-6">{renderGameContent()}
+      <div>{error}</div>
+      <div className="mt-6 flex justify-center">
+        <button
+          onClick={handleLeaveGame}
+          className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50"
+        >
+          {isHost ? "End Game" : "Leave Game"}
+        </button>
+      </div>
+      </div>
+      <button onClick={toggleShowPlayerInfo}>
+        Player Info
+      </button>
+
+      {showPlayerInfo && (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+        <div className="bg-white rounded-lg shadow-md p-6 max-w-md w-full">
+          <PlayerInfo players={game.players} socket={socket} currentPlayerId={playerId} />
+          <button
+            onClick={toggleShowPlayerInfo}
+            className="mt-4 bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-lg transition duration-300 ease-in-out"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    )}
     </div>
   );
 }

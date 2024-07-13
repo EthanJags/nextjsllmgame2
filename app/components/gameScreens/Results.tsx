@@ -11,6 +11,8 @@ const Results: React.FC<{
   const latestAnswers = useAppSelector((state) => state.game.latestAnswers);
   const players = useAppSelector((state) => state.game.players);
   const [timeLeft, setTimeLeft] = useState(30);
+  const maxRounds = useAppSelector((state) => state.game.gameSettings.rounds);
+  const currentRound = useAppSelector((state) => state.game.currentRound);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -33,7 +35,11 @@ const Results: React.FC<{
   };
 
   const handleMoveToScores = () => {
-    dispatch(setCurrentStage("Score"));
+    if (currentRound < maxRounds) {
+      dispatch(setCurrentStage("Score"));
+    } else {
+      dispatch(setCurrentStage("End"));
+    }
   };
 
   return (

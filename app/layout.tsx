@@ -5,6 +5,7 @@ import ClientProvider from "./ClientProvider";
 import Footer from "./components/Footer";
 import SocketWrapper from "./socketWrapper";
 import Navbar from "./components/Navbar";
+import { ThemeProvider } from "next-themes";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -21,6 +22,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
+        <ThemeProvider attribute="class">
         <ClientProvider>
           <SocketWrapper>
             <Navbar />
@@ -28,6 +30,7 @@ export default function RootLayout({
             <Footer />
           </SocketWrapper>
         </ClientProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

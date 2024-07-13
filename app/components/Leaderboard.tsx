@@ -5,7 +5,7 @@ const Leaderboard: React.FC<{ players: Game["players"] }> = ({ players }) => {
   const sortedPlayers = [...players].sort((a, b) => b.score - a.score);
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6">
+    <div className="p-6">
       <h2 className="text-2xl font-bold text-indigo-700 mb-4">Leaderboard</h2>
       <ul className="space-y-2">
         {sortedPlayers.map((player, index) => (

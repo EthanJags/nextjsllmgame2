@@ -7,6 +7,7 @@ import { getSocket, initSocket } from "./functions/socketManager";
 import { setPlayerIsHost, setPlayerName } from "./store/slices/playerSlice";
 import { setGame } from "./store/slices/gameSlice";
 import { useSocketEvent } from "./functions/useSocketEvent";
+import { QuestionMarkBackground } from "./components/QuestionMarkBackground";
 
 export default function Home() {
   const [name, setName] = useState<string>("");
@@ -95,11 +96,13 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-background-light flex flex-col items-center justify-center p-4">
+<div className="min-h-screen bg-background-light bg-opacity-80 flex flex-col items-center justify-center p-4 relative z-10">
       <h1 className="text-4xl font-bold mb-8 text-primary-dark">Welcome to the LLM Game!</h1>
+      {/* <QuestionMarkBackground /> */}
       <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
         <input
           type="text"
+          autoFocus
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="Enter your name"

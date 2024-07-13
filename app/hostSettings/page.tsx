@@ -21,8 +21,17 @@ export default function HostSettings() {
     timePerVote: 20,
     timePerResults: 15,
     timePerScore: 10,
-    promptDeck: "standard"
+    promptDeck: "standard",
   });
+
+  const settingOptions = {
+    rounds: [3, 5, 7, 10],
+    timePerQuestion: [30, 45, 60, 90, 120],
+    timePerVote: [15, 20, 30, 45],
+    timePerResults: [5, 10, 15, 20, 30],
+    timePerScore: [5, 10, 15, 20, 30],
+    promptDeck: ["standard", "family", "adult"],
+  };
 
   useEffect(() => {
     if (socketID && player.isHost && player.name) {
@@ -50,7 +59,7 @@ export default function HostSettings() {
   };
 
   const handleSettingChange = (setting: keyof GameSettings, value: number | string) => {
-    setGameSettings(prev => ({ ...prev, [setting]: value }));
+    setGameSettings((prev) => ({ ...prev, [setting]: value }));
   };
 
   return (
@@ -63,28 +72,21 @@ export default function HostSettings() {
           {Object.entries(gameSettings).map(([key, value]) => (
             <div key={key} className="flex flex-col">
               <label htmlFor={key} className="mb-2 text-sm font-medium text-gray-600">
-                {key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, ' $1')}:
+                {key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, " $1")}:
               </label>
-              {key === 'promptDeck' ? (
-                <select
-                  id={key}
-                  value={value as string}
-                  onChange={(e) => handleSettingChange(key as keyof GameSettings, e.target.value)}
-                  className="p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary text-gray-800"
-                >
-                  <option value="standard">Standard</option>
-                  <option value="family">Family Friendly</option>
-                  <option value="adult">Adult</option>
-                </select>
-              ) : (
-                <input
-                  type="number"
-                  id={key}
-                  value={value as number}
-                  onChange={(e) => handleSettingChange(key as keyof GameSettings, Number(e.target.value))}
-                  className="p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary text-gray-800"
-                />
-              )}
+              <select
+                id={key}
+                value={value}
+                onChange={(e) => handleSettingChange(key as keyof GameSettings, 
+                  key === "promptDeck" ? e.target.value : Number(e.target.value))}
+                className="p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary text-gray-800"
+              >
+                {settingOptions[key as keyof typeof settingOptions].map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
             </div>
           ))}
         </div>

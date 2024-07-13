@@ -7,6 +7,7 @@ import { Socket } from "socket.io";
 import prompts from "./prompts/prompts";
 import { getRoom, generateUniqueRoomCode, getRandomQuestion, leaveAllGameRooms } from "./utils";
 import { current } from "@reduxjs/toolkit";
+import { startTimer, cancelTimer } from "./utils/timerManager";
 const scorePerVote = 100;
 
 interface PlayerConnection {
@@ -14,6 +15,8 @@ interface PlayerConnection {
   GameId: ID | null;
 }
 const playerConnections: Map<ID, PlayerConnection> = new Map();
+
+export const gameTimers: { [gameRoom: string]: NodeJS.Timeout } = {};
 
 interface CustomSocket extends Socket {
   playerId: string;
@@ -120,6 +123,7 @@ app.prepare().then(() => {
         currentStage: "Answering",
         currentRound: 1,
         currentQuestion: "",
+        timeRemaining: 0,
         chatHistory: [],
       };
       // add game to games
@@ -162,12 +166,40 @@ app.prepare().then(() => {
 
         // Send first question to all players in the game room
         io.to(gameRoom.toString()).emit("gameUpdate", { game: game, action: "startGame" });
-
-        
+        // start timer
+        startTimer(game, game.gameSettings.timePerQuestion, gameRoom, () => {
+          // RIGHT HERE FOR CHECKING IF ENOUGH ANSWERS
+          const playerCount = game.players.length;
+          const answerCount = Object.keys(game.latestAnswers).length;
+          if (playerCount === 1 || answerCount >= 2) {
+            prepareVotingStage(game);
+          }
+        });
       } else {
         console.error("Socket is not in any game room");
       }
     });
+
+    function checkAndResetTimer(game: Game) {
+      const gameRoom: number = game.code;
+      const playerCount = game.players.length;
+      const answerCount = Object.keys(game.latestAnswers).length;
+    
+      if (playerCount === 1 || answerCount >= 2) {
+        prepareVotingStage(game);
+      } else {
+        // Not enough answers, reset the timer
+        game.timeRemaining = game.gameSettings.timePerQuestion;
+        io.to(gameRoom.toString()).emit("gameUpdate", { 
+          game: game, 
+          action: "resetAnsweringTime",
+        });
+        // Restart the timer
+        startTimer(game, game.gameSettings.timePerQuestion, gameRoom, () => {
+          checkAndResetTimer(game);
+        });
+      }
+    }
 
     // Join Game
     socket.on("joinGame", (data: { code: number; player: Player }) => {
@@ -202,6 +234,46 @@ app.prepare().then(() => {
         socket.emit("invalidCode");
       }
     });
+
+    // kick player
+    socket.on("kickPlayer", (data: { playerId: ID }) => {
+      const playerId = data.playerId;
+      const gameRoom = getRoom(socket);
+      const game = games[gameRoom];
+
+      // check if player exists
+      const playerExists = game.players.some((player) => player.id === playerId);
+      if (playerExists) {
+        // remove player from game
+        game.players = game.players.filter((player) => player.id !== playerId);
+        // emit player removed to all clients in game
+        io.to(gameRoom.toString()).emit("gameUpdate", game);
+      }
+    });
+
+    // leave game
+    socket.on("leaveGame", (data: { playerId: ID }) => {
+      const gameRoom = getRoom(socket);
+      const game = games[gameRoom];
+      // check if host
+      const playerId = data.playerId;
+      const player = game.players.find((player) => player.id === playerId);
+      if (player && player.isHost) {
+        // remove game
+        delete games[gameRoom];
+        // emit game removed to all clients in game
+        io.to(gameRoom.toString()).emit("gameRemoved");
+      } else {
+        // remove player from game
+        // console.log("before player leaving: ", game.players)
+        game.players = game.players.filter((player) => player.id !== playerId);
+        // console.log("after player leaving: ", game.players)
+        // emit player removed to all clients in game
+        io.to(gameRoom.toString()).emit("gameUpdate",  { game: game, action: "playerLeft" });
+      }
+      // leave game room
+      socket.leave(gameRoom.toString());
+    })
 
     // next round
     socket.on("nextRound", () => {
@@ -281,42 +353,63 @@ app.prepare().then(() => {
       // if all players have answered, move to next stage
       console.log("all players answered: ", allPlayersAnswered);
       if (allPlayersAnswered) {
-        // Get all answers as an array
-        const allAnswers = Object.values(game.latestAnswers);
-
-        //  Shuffle the array
-        const shuffledAnswers = allAnswers.sort(() => Math.random() - 0.5);
-
-        // Create a new object with numeric keys for the shuffled answers
-        const randomizedAnswers = shuffledAnswers.reduce((acc, answer, index) => {
-          acc[index] = answer;
-          return acc;
-        }, {} as LatestAnswers);
-
-        // Update game stage
-        game.currentStage = "Voting";
-        // update game with randomized answers
-        game.latestAnswers = randomizedAnswers;
-        // emit updated game to all players
-        io.to(gameRoom.toString()).emit("gameUpdate", { game: game, action: "allPlayersAnswered" });
-
-        // // Send personalized answer sets to each player
-        // game.players.forEach((player) => {
-        //   const playerAnswers = randomizedAnswers.filter((a) => a.submittedBy !== player.id);
-        //   const socketId = getSocketIdFromPlayerId(player.id);
-        //   if (!socketId) {
-        //     console.error("PlayerID not found in playerConnections");
-        //     return;
-        //   }
-        //   io.to(socketId).emit("allPlayersAnswered", playerAnswers, game.gameSettings.timePerQuestion);
-        // });
-
-        // Start the timer for all players
-        setTimeout(() => {
-          io.to(gameRoom.toString()).emit("timeOver");
-        }, game.gameSettings.timePerQuestion * 1000);
+        prepareVotingStage(game);
       }
     });
+
+    function prepareVotingStage(game: Game) {
+      const allAnswers = Object.values(game.latestAnswers);
+
+      // Shuffle the array
+      const shuffledAnswers = allAnswers.sort(() => Math.random() - 0.5);
+
+      // Create a new object with numeric keys for the shuffled answers
+      const randomizedAnswers = shuffledAnswers.reduce((acc, answer, index) => {
+        acc[index] = answer;
+        return acc;
+      }, {} as LatestAnswers);
+
+      // Update game stage
+      game.currentStage = "Voting";
+      // update game with randomized answers
+      game.latestAnswers = randomizedAnswers;
+      // set time remaining to timePerVote
+      game.timeRemaining = game.gameSettings.timePerVote;
+
+      // emit updated game to all players
+      io.to(game.code.toString()).emit("gameUpdate", { game: game, action: "allPlayersAnswered" });
+      // start timer
+      startTimer(game, game.gameSettings.timePerVote, game.code, () => {
+        prepareResultsStage(game);
+        console.log("time over voting");
+      });
+    }
+
+    function prepareResultsStage(game: Game) {
+      // Calculate scores
+      const newScores: { [playerId: ID]: number } = {};
+
+      Object.entries(game.latestAnswers).forEach(([playerId, answer]) => {
+        newScores[playerId] = answer.votes.length * scorePerVote;
+      });
+
+      // Update player scores
+      game.players.forEach((player) => {
+        if (newScores[player.id] !== undefined) {
+          player.score += newScores[player.id];
+        }
+      });
+      // change stage to results
+      game.currentStage = "Results";
+
+      io.to(game.code.toString()).emit("gameUpdate", { game: game, action: "allPlayersVoted" });
+      // start timer
+      startTimer(game, game.gameSettings.timePerResults, game.code, () => {
+        game.timeRemaining = game.gameSettings.timePerResults;
+        game.currentStage = "Score";
+        io.to(game.code.toString()).emit("gameUpdate", { game: game, action: "timeOverResults" });
+      });
+    }
 
     // vote for answer
     socket.on("submitVote", (data: { currentPlayerId: ID; answerAuthor: ID }) => {
@@ -344,28 +437,7 @@ app.prepare().then(() => {
       io.to(gameRoom.toString()).emit("voteReceived", { voterId, totalVotes });
 
       if (allPlayersVoted) {
-        // Calculate scores
-        const newScores: { [playerId: ID]: number } = {};
-
-        Object.entries(game.latestAnswers).forEach(([playerId, answer]) => {
-          newScores[playerId] = answer.votes.length * scorePerVote;
-        });
-
-        // Update player scores
-        game.players.forEach((player) => {
-          if (newScores[player.id] !== undefined) {
-            player.score += newScores[player.id];
-          }
-        });
-        // change stage to results
-        game.currentStage = "Results";
-
-        // emit updated scores and latestAnswers to all players
-        // io.to(gameRoom.toString()).emit(
-        //   "allPlayersVoted",
-        //   { players: game.players, latestAnswers: game.latestAnswers }
-        // );
-        io.to(gameRoom.toString()).emit("gameUpdate", { game: game, action: "allPlayersVoted" });
+        prepareResultsStage(game);
       }
     });
 
