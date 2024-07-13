@@ -30,7 +30,7 @@ export default function HostSettings() {
     timePerVote: [15, 20, 30, 45],
     timePerResults: [5, 10, 15, 20, 30],
     timePerScore: [5, 10, 15, 20, 30],
-    promptDeck: ["standard", "family", "adult"],
+    promptDeck: ["Standard", "Family Friendly", "Adult"],
   };
 
   useEffect(() => {

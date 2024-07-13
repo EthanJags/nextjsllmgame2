@@ -32,13 +32,13 @@ export function leaveAllGameRooms(socket: Socket) {
 export function getRandomQuestion(promptDeck: string): string {
   let prompts: string[];
   switch (promptDeck) {
-    case "standard":
+    case "Standard":
       prompts = standard;
       break;
-    case "adultDirty":
+    case "Adult":
       prompts = adultDirty;
       break;
-    case "familyFriendly":
+    case "Family Friendly":
       prompts = familyFriendly;
       break;
     default:
