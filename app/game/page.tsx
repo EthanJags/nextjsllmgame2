@@ -28,7 +28,7 @@ export default function Game() {
   const socket = getSocket();
   const player = useAppSelector((state) => state.player);
   const dispatch = useAppDispatch();
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const game = useAppSelector((state) => state.game);
   const currentStage = useAppSelector((state) => state.game.currentStage);
   const [timeRemaining, setTimeRemaining] = useState<number>(30);
@@ -62,6 +62,7 @@ export default function Game() {
         if (!game.gameActive) {
           console.log("Game no longer active");
         }
+      setIsLoading(false);
       });
 
       // if code is invalid
@@ -71,13 +72,12 @@ export default function Game() {
         router.push("/");
       });
 
-      setIsLoading(false);
     } else {
       if (!alertShown.current) {
         alert("No socket ID or game code");
         alertShown.current = true;
-        router.push("/");
       }
+      router.push("/");
     }
   }, [socketID]);
 
