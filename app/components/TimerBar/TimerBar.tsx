@@ -1,5 +1,4 @@
 import React from "react";
-import styles from "./TimerBar.module.css";
 
 interface TimerBarProps {
   timeRemaining: number;
@@ -10,12 +9,14 @@ const TimerBar: React.FC<TimerBarProps> = ({ timeRemaining, totalTime }) => {
   const percentageRemaining = (timeRemaining / totalTime) * 100;
 
   return (
-    <div className={styles.timerBarContainer}>
+    <div className="w-full h-6 bg-gray-200 rounded-full overflow-hidden relative">
       <div
-        className={styles.timerBar}
+        className="h-full bg-green-500 transition-all duration-1000 ease-linear"
         style={{ width: `${percentageRemaining}%` }}
       />
-      <h1>{timeRemaining} seconds left</h1>
+      <div className="absolute inset-0 flex items-center justify-center">
+        <span className="text-sm font-semibold text-white">{timeRemaining} seconds left</span>
+      </div>
     </div>
   );
 };

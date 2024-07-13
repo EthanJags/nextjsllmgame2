@@ -16,11 +16,12 @@ export default function Join() {
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const socketID = useAppSelector((state) => state.socket.id);
+  const playerId = useAppSelector((state) => state.player.id);
 
   useEffect(() => {
     console.log("socketID: ", socketID);
     if (socketID && player.name) {
-      const socket = initSocket(socketID);
+      const socket = initSocket(socketID, playerId);
       console.log("Socket: ", socket);
       console.log("Player: ", player);
       setIsLoading(false);
@@ -64,19 +65,13 @@ export default function Join() {
   };
 
   if (isLoading) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        Loading...
-      </div>
-    );
+    return <div className="flex justify-center items-center h-screen">Loading...</div>;
   }
 
   return (
     <div className="min-h-screen bg-background-light flex flex-col items-center justify-center p-4">
       <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-        <h1 className="text-2xl font-bold mb-6 text-primary-dark text-center">
-          Welcome, {player.name}!
-        </h1>
+        <h1 className="text-2xl font-bold mb-6 text-primary-dark text-center">Welcome, {player.name}!</h1>
         <div className="space-y-4">
           <input
             type="text"

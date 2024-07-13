@@ -3,7 +3,13 @@
 import { Socket } from "socket.io";
 
 export function getRoom(socket: Socket): number {
-  return Number(Array.from(socket.rooms)[1]);
+  const room = Number(Array.from(socket.rooms)[1]);
+  if (isNaN(room)) {
+    console.log("getRoom failed", socket.rooms);
+    return -1;
+  } else {
+    return room;
+  }
 }
 
 export function generateUniqueRoomCode(games: Record<number, any>): number {
@@ -26,4 +32,5 @@ export function getRandomQuestion(prompts: string[]): string {
   return prompts[Math.floor(Math.random() * prompts.length)];
 }
 
-// Add any other utility functions you need
+// timer utils
+

@@ -12,14 +12,21 @@ export default function HostSettings() {
   const player = useAppSelector((state) => state.player);
   const [isLoading, setIsLoading] = useState(true);
   const socketID = useAppSelector((state) => state.socket.id);
+  const playerID = useAppSelector((state) => state.player.id);
   const dispatch = useAppDispatch();
 
-  const [rounds, setRounds] = useState(5);
-  const [timePerQuestion, setTimePerQuestion] = useState(30);
+  const [gameSettings, setGameSettings] = useState<GameSettings>({
+    rounds: 5,
+    timePerQuestion: 30,
+    timePerVote: 20,
+    timePerResults: 15,
+    timePerScore: 10,
+    promptDeck: "standard"
+  });
 
   useEffect(() => {
     if (socketID && player.isHost && player.name) {
-      const socket = initSocket(socketID);
+      initSocket(socketID, playerID);
       setIsLoading(false);
     } else {
       router.push("/");
@@ -27,16 +34,11 @@ export default function HostSettings() {
   }, [player.name, socketID, player.isHost, router]);
 
   if (isLoading) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        Loading...
-      </div>
-    );
+    return <div className="flex justify-center items-center h-screen">Loading...</div>;
   }
 
   const handleStartClick = () => {
     if (!socket) return;
-    const gameSettings = { rounds, timePerQuestion };
     socket.emit("createGame", gameSettings, player);
     dispatch(resetGame());
 
@@ -47,58 +49,44 @@ export default function HostSettings() {
     });
   };
 
+  const handleSettingChange = (setting: keyof GameSettings, value: number | string) => {
+    setGameSettings(prev => ({ ...prev, [setting]: value }));
+  };
+
   return (
     <div className="min-h-screen bg-background-light flex flex-col items-center justify-center p-4">
       <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-        <h1 className="text-2xl font-bold mb-6 text-primary-dark text-center">
-          Welcome, {player.name}!
-        </h1>
-        <h2 className="text-xl font-semibold mb-4 text-gray-700">
-          Game Settings
-        </h2>
+        <h1 className="text-2xl font-bold mb-6 text-primary-dark text-center">Welcome, {player.name}!</h1>
+        <h2 className="text-xl font-semibold mb-4 text-gray-700">Game Settings</h2>
 
         <div className="space-y-4">
-          <div className="flex flex-col">
-            <label
-              htmlFor="rounds"
-              className="mb-2 text-sm font-medium text-gray-600"
-            >
-              Number of Rounds:
-            </label>
-            <select
-              id="rounds"
-              value={rounds}
-              onChange={(e) => setRounds(Number(e.target.value))}
-              className="p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary text-gray-800"
-            >
-              {[3, 5, 10, 15, 20].map((num) => (
-                <option key={num} value={num}>
-                  {num}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="flex flex-col">
-            <label
-              htmlFor="timePerQuestion"
-              className="mb-2 text-sm font-medium text-gray-600"
-            >
-              Time per Question (seconds):
-            </label>
-            <select
-              id="timePerQuestion"
-              value={timePerQuestion}
-              onChange={(e) => setTimePerQuestion(Number(e.target.value))}
-              className="p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary text-gray-800"
-            >
-              {[15, 30, 45, 60, 90].map((num) => (
-                <option key={num} value={num}>
-                  {num}
-                </option>
-              ))}
-            </select>
-          </div>
+          {Object.entries(gameSettings).map(([key, value]) => (
+            <div key={key} className="flex flex-col">
+              <label htmlFor={key} className="mb-2 text-sm font-medium text-gray-600">
+                {key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, ' $1')}:
+              </label>
+              {key === 'promptDeck' ? (
+                <select
+                  id={key}
+                  value={value as string}
+                  onChange={(e) => handleSettingChange(key as keyof GameSettings, e.target.value)}
+                  className="p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary text-gray-800"
+                >
+                  <option value="standard">Standard</option>
+                  <option value="family">Family Friendly</option>
+                  <option value="adult">Adult</option>
+                </select>
+              ) : (
+                <input
+                  type="number"
+                  id={key}
+                  value={value as number}
+                  onChange={(e) => handleSettingChange(key as keyof GameSettings, Number(e.target.value))}
+                  className="p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary text-gray-800"
+                />
+              )}
+            </div>
+          ))}
         </div>
 
         <button

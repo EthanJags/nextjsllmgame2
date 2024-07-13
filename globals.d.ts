@@ -18,6 +18,10 @@ declare interface GameSettings {
   // Add game settings here
   rounds: number;
   timePerQuestion: number;
+  timePerVote: number;
+  timePerResults: number;
+  timePerScore: number;
+  promptDeck: string;
 }
 
 declare interface Answer {
@@ -30,14 +34,7 @@ declare interface LatestAnswers {
   [playerId: ID]: Answer;
 }
 
-declare type GameStates =
-  | "Answering"
-  | "Voting"
-  | "AwaitingResponses"
-  | "AwaitingVotes"
-  | "Results"
-  | "Score"
-  | "End";
+declare type GameStates = "Answering" | "Voting" | "AwaitingResponses" | "AwaitingVotes" | "Results" | "Score" | "End";
 
 declare interface ChatMessage {
   sender: string;
@@ -54,6 +51,7 @@ declare interface Game {
   currentStage: GameStates;
   currentRound: number;
   currentQuestion: string;
+  timeRemaining: number;
   chatHistory: ChatMessage[];
 }
 

@@ -1,17 +1,19 @@
 import express from "express";
-import { createServer } from "http";
+import { createServer, get } from "http";
 import { Server } from "socket.io";
 import next from "next";
 import { v4 as uuidv4 } from "uuid";
 import { Socket } from "socket.io";
 import prompts from "./prompts/prompts";
-import {
-  getRoom,
-  generateUniqueRoomCode,
-  getRandomQuestion,
-  leaveAllGameRooms,
-} from "./utils";
+import { getRoom, generateUniqueRoomCode, getRandomQuestion, leaveAllGameRooms } from "./utils";
+import { current } from "@reduxjs/toolkit";
 const scorePerVote = 100;
+
+interface PlayerConnection {
+  socketId: ID;
+  GameId: ID | null;
+}
+const playerConnections: Map<ID, PlayerConnection> = new Map();
 
 interface CustomSocket extends Socket {
   playerId: string;
@@ -23,6 +25,15 @@ const handler = app.getRequestHandler();
 
 const hostname = "localhost";
 const port = 3000;
+
+function getSocketIdFromPlayerId(playerId: ID) {
+  console.log("playerConnections: ", playerConnections);
+  const playerConnection = playerConnections.get(playerId);
+  if (playerConnection) {
+    return playerConnection.socketId;
+  }
+  return null;
+}
 
 app.prepare().then(() => {
   console.log("Node app prepared");
@@ -36,20 +47,66 @@ app.prepare().then(() => {
 
   //   io.use(wildcard());
   io.on("connection", (socket) => {
-    console.log("a user connected (server)");
-    // generate player id
-    const playerId = socket.id;
-    socket.emit("player_id", playerId);
-    console.log("server Player ID: ", playerId);
+    console.log("a user connected (server)", socket.id);
+
+    // update playerID socketID map
+    let playerId = socket.handshake.auth.playerId;
+    console.log("playerId on connection: ", playerId);
+
+    if (playerId) {
+      playerConnections.set(playerId, {
+        socketId: socket.id,
+        GameId: null,
+      });
+      console.log("playerId set: ", playerId, " socketId: ", socket.id);
+      console.log("playerConnections: ", playerConnections);
+    }
+
+    function generatePlayerId() {
+      let playerId;
+      playerId = uuidv4();
+      // Associate the player ID with the socket
+      socket.data.playerId = playerId;
+      // add player to playerConnections
+      playerConnections.set(playerId, {
+        socketId: socket.id,
+        GameId: null,
+      });
+      console.log("playerId created: ", playerId, " socketId: ", socket.id);
+      console.log("playerConnections: ", playerConnections);
+      socket.emit("playerId", playerId);
+      return playerId;
+    }
+
+    function logSocketsInRoom(roomName: string) {
+      const rooms = io.sockets.adapter.rooms;
+      const room = rooms.get(roomName);
+
+      if (room) {
+        console.log(`Sockets in room ${roomName}:`);
+        Array.from(room).forEach((socketId) => {
+          console.log(socketId);
+        });
+      } else {
+        console.log(`Room ${roomName} does not exist or is empty.`);
+      }
+    }
+
+    function logAllRooms() {
+      console.log("All rooms and their sockets:");
+      Array.from(io.sockets.adapter.rooms).forEach(([roomName, room]) => {
+        console.log(`Room: ${roomName}`);
+        Array.from(room).forEach((socketId) => {
+          console.log(`  Socket: ${socketId}`);
+        });
+      });
+    }
 
     // Create Game
     socket.on("createGame", (gameSettings: GameSettings, player: Player) => {
+      player.id = generatePlayerId();
       console.log("gameSettings: ", gameSettings);
       console.log("player: ", player);
-      
-      // generate player id
-      const playId = uuidv4();
-      console.log("playId: ", playId);
 
       // generate a room code
       const gameCode: number = generateUniqueRoomCode(games);
@@ -80,16 +137,33 @@ app.prepare().then(() => {
     // Start Game
     socket.on("startGame", () => {
       console.log("game started");
-
+      console.log("rooms", Array.from(socket.rooms));
       // Get the rooms this socket is in
       const gameRoom = getRoom(socket);
+      console.log("game room: ", gameRoom);
 
       if (gameRoom) {
+        logAllRooms();
+        // update game in games
+        // Get the game object
+        const game = games[gameRoom]; // creates reference
+        // Set game to active
+        game.gameActive = true;
+        // Set current stage to answering
+        game.currentStage = "Answering";
+        // Set current round to 1
+        game.currentRound = 1;
+        // Set current question to getCurrentQuestion
+        game.currentQuestion = getRandomQuestion(prompts);
+        // Set latest answers to empty object
+        game.latestAnswers = {};
+        // set time remaining to timePerQuestion
+        game.timeRemaining = game.gameSettings.timePerQuestion;
+
         // Send first question to all players in the game room
-        io.to(gameRoom.toString()).emit(
-          "gameStarted",
-          "What is the capital of France?",
-        );
+        io.to(gameRoom.toString()).emit("gameUpdate", { game: game, action: "startGame" });
+
+        
       } else {
         console.error("Socket is not in any game room");
       }
@@ -98,35 +172,54 @@ app.prepare().then(() => {
     // Join Game
     socket.on("joinGame", (data: { code: number; player: Player }) => {
       const { code, player } = data;
+      player.id = generatePlayerId();
       console.log("code", code);
       console.log("player", player);
       console.log("join game, code: ", code, " id: ", player.id);
       // check if game exists
-  if (code in games) {
-    // check if name is already taken
-    const isNameTaken = games[code].players.some(p => p.name.toLowerCase() === player.name.toLowerCase());
-    if (isNameTaken) {
-      // emit error to client if name is taken
-      console.log("name already taken: ", player.name);
-      socket.emit("nameTaken");
-    } else {
-      // add player to game
-      games[code].players.push(player);
-      // join game on socket
-      socket.join(code.toString());
-      // emit new players to all clients in game
-      console.log("add player to game: ", player.name);
-      io.to(code.toString()).emit("addPlayer", player);
-      // emit to client
-      console.log("valid code: ", games[code]);
-      socket.emit("validCode", games[code]);
-    }
-  } else {
-    // emit error to client
-    console.log("invalid code: ", code);
-    socket.emit("invalidCode");
-  }
-});
+      if (code in games) {
+        // check if name is already taken
+        const isNameTaken = games[code].players.some((p) => p.name.toLowerCase() === player.name.toLowerCase());
+        if (isNameTaken) {
+          // emit error to client if name is taken
+          console.log("name already taken: ", player.name);
+          socket.emit("nameTaken");
+        } else {
+          // add player to game
+          games[code].players.push(player);
+          // join game on socket
+          socket.join(code.toString());
+          // emit new players to all clients in game
+          console.log("add player to game: ", player.name);
+          io.to(code.toString()).emit("addPlayer", player);
+          // emit to client
+          console.log("valid code: ", games[code]);
+          socket.emit("validCode", games[code]);
+        }
+      } else {
+        // emit error to client
+        console.log("invalid code: ", code);
+        socket.emit("invalidCode");
+      }
+    });
+
+    // next round
+    socket.on("nextRound", () => {
+      const gameRoom = getRoom(socket);
+      const game = games[gameRoom];
+      // increment round
+      game.currentRound++;
+      // get next question
+      const question = getRandomQuestion(prompts);
+      // set current question
+      game.currentQuestion = question;
+      // set current stage to answering
+      game.currentStage = "Answering";
+      // reset latest answers
+      game.latestAnswers = {};
+      // send updated game to all players
+      io.to(gameRoom.toString()).emit("gameUpdate", { game: game, action: "nextRound" });
+    });
 
     // request game update
     socket.on("requestGameUpdate", (code: number) => {
@@ -135,7 +228,8 @@ app.prepare().then(() => {
       if (code in games) {
         // emit game update to client
         // console.log('game update: ', games[code])
-        socket.emit("gameUpdate", games[code]);
+        const game = games[code];
+        socket.emit("gameUpdate", { game: game, action: "requestGameUpdate" });
       } else {
         console.log("game no longer active ", code);
         socket.emit("gameNotActive");
@@ -153,59 +247,69 @@ app.prepare().then(() => {
       console.log("question: ", question);
       console.log("game room: ", gameRoom);
       const timePerQuestion = 60;
-      io.to(gameRoom.toString()).emit(
-        "recieveQuestion",
-        question,
-        timePerQuestion,
-      );
+      io.to(gameRoom.toString()).emit("recieveQuestion", question, timePerQuestion);
       setTimeout(() => {
         io.to(gameRoom.toString()).emit("timeOver");
       }, timePerQuestion * 1000);
     });
 
-
     // submit answer
-    socket.on("submitAnswer", (data: { answer: string }) => {
+    socket.on("submitAnswer", (data: { currentPlayerId: ID; answer: string }) => {
+      console.log(data);
       console.log("submit answer: ", data.answer);
-      const playerId = socket.id;
+      console.log("current player id: ", data.currentPlayerId);
+      const playerId = data.currentPlayerId;
       const answer = { text: data.answer, submittedBy: playerId, votes: [] };
-      console.log(answer)
+      console.log(answer);
       const gameRoom: number = getRoom(socket);
       const game = games[gameRoom];
       // store the answer
       game.latestAnswers[playerId] = answer;
 
       // check if all players have answered
-      console.log(game.latestAnswers)
-      console.log("game.players: ", game.players)
+      console.log("game.latestAnswers", game.latestAnswers);
+      console.log("game.players: ", game.players);
       const allPlayersAnswered = game.players.every((player) => {
         const playerAnswered = player.id in game.latestAnswers;
         console.log(`Player ${player.id} answered: `, playerAnswered);
         return playerAnswered;
       });
-      // const allPlayersAnswered = game.players.every(
-      //   (player) => player.id in game.latestAnswers,
-      // );
+      const totalAnswers = Object.keys(game.latestAnswers).length;
+
+      io.to(gameRoom.toString()).emit("answerRecieved", { playerId, totalAnswers });
+
       // if all players have answered, move to next stage
       console.log("all players answered: ", allPlayersAnswered);
       if (allPlayersAnswered) {
-        // Create an array of all answers
+        // Get all answers as an array
         const allAnswers = Object.values(game.latestAnswers);
 
-        // Randomize the order of answers
-        const randomizedAnswers = allAnswers.sort(() => Math.random() - 0.5);
+        //  Shuffle the array
+        const shuffledAnswers = allAnswers.sort(() => Math.random() - 0.5);
 
-        // Send personalized answer sets to each player
-        game.players.forEach((player) => {
-          const playerAnswers = randomizedAnswers.filter(
-            (a) => a.submittedBy !== player.id,
-          );
-          io.to(player.id).emit(
-            "allPlayersAnswered",
-            playerAnswers,
-            game.gameSettings.timePerQuestion,
-          );
-        });
+        // Create a new object with numeric keys for the shuffled answers
+        const randomizedAnswers = shuffledAnswers.reduce((acc, answer, index) => {
+          acc[index] = answer;
+          return acc;
+        }, {} as LatestAnswers);
+
+        // Update game stage
+        game.currentStage = "Voting";
+        // update game with randomized answers
+        game.latestAnswers = randomizedAnswers;
+        // emit updated game to all players
+        io.to(gameRoom.toString()).emit("gameUpdate", { game: game, action: "allPlayersAnswered" });
+
+        // // Send personalized answer sets to each player
+        // game.players.forEach((player) => {
+        //   const playerAnswers = randomizedAnswers.filter((a) => a.submittedBy !== player.id);
+        //   const socketId = getSocketIdFromPlayerId(player.id);
+        //   if (!socketId) {
+        //     console.error("PlayerID not found in playerConnections");
+        //     return;
+        //   }
+        //   io.to(socketId).emit("allPlayersAnswered", playerAnswers, game.gameSettings.timePerQuestion);
+        // });
 
         // Start the timer for all players
         setTimeout(() => {
@@ -215,12 +319,12 @@ app.prepare().then(() => {
     });
 
     // vote for answer
-    socket.on("submitVote", (data: { answerAuthor: ID }) => {
-      const voterId = socket.id;
-      const { answerAuthor } = data; // vote
+    socket.on("submitVote", (data: { currentPlayerId: ID; answerAuthor: ID }) => {
+      const voterId = data.currentPlayerId; // voter
+      const answerAuthor = data.answerAuthor; // vote
       const gameRoom: number = getRoom(socket);
       const game = games[gameRoom];
-
+      console.log("submitVote game: ", game);
       // Find the answer
       const answer = Object.values(game.latestAnswers)
         .flat()
@@ -234,9 +338,10 @@ app.prepare().then(() => {
       const totalVotes = Object.values(game.latestAnswers)
         .flat()
         .reduce((sum, a) => sum + a.votes.length, 0);
+      console.log("latest answers: ", game.latestAnswers);
       const allPlayersVoted = totalVotes === game.players.length;
       console.log("all players voted: ", allPlayersVoted, totalVotes, game.players.length);
-      io.to(gameRoom.toString()).emit("voteReceived", voterId);
+      io.to(gameRoom.toString()).emit("voteReceived", { voterId, totalVotes });
 
       if (allPlayersVoted) {
         // Calculate scores
@@ -252,21 +357,25 @@ app.prepare().then(() => {
             player.score += newScores[player.id];
           }
         });
+        // change stage to results
+        game.currentStage = "Results";
 
         // emit updated scores and latestAnswers to all players
-        io.to(gameRoom.toString()).emit(
-          "allPlayersVoted",
-          game.players,
-          game.latestAnswers,
-        );
+        // io.to(gameRoom.toString()).emit(
+        //   "allPlayersVoted",
+        //   { players: game.players, latestAnswers: game.latestAnswers }
+        // );
+        io.to(gameRoom.toString()).emit("gameUpdate", { game: game, action: "allPlayersVoted" });
       }
     });
 
-
-
     socket.on("disconnect", () => {
       console.log("user disconnected");
-      // Additional logic to handle player disconnection
+      // remove player from playerConnections
+      const playerConnection = playerConnections.get(playerId);
+      if (playerConnection) {
+        playerConnections.delete(playerId);
+      }
     });
   });
 

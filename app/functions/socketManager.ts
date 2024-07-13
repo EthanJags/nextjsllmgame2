@@ -1,13 +1,15 @@
 // socketManager.ts
 import io, { Socket } from "socket.io-client";
+import { useAppSelector } from "../store/constants/reduxTypes";
 
 let socket: Socket | null = null;
 
-export const initSocket = (persistedId: string | null) => {
+export const initSocket = (persistedId: string | null, playerId: string) => {
   console.log("initSocket called", persistedId);
   if (!socket) {
     socket = io("http://localhost:3000", {
       query: persistedId ? { id: persistedId } : undefined,
+      auth: playerId !== "" ? { playerId } : {},
     });
   }
   return socket;

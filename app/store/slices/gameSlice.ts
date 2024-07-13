@@ -51,6 +51,7 @@ const gameSlice = createSlice({
       state.gameActive = action.payload.gameActive;
       state.currentStage = action.payload.currentStage;
       state.currentQuestion = action.payload.currentQuestion;
+      state.currentRound = action.payload.currentRound;
     },
     setGameCode: (state, action: PayloadAction<number>) => {
       state.code = action.payload;

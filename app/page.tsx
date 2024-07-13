@@ -39,11 +39,14 @@ export default function Home() {
     }
   }, [socket, socketID]);
 
-  const handleValidCode = useCallback((game: Game) => {
-    setIsSubmitting(false);
-    dispatch(setGame(game));
-    router.push(`/waitingRoom?code=${game.code}`);
-  }, [dispatch, router]);
+  const handleValidCode = useCallback(
+    (game: Game) => {
+      setIsSubmitting(false);
+      dispatch(setGame(game));
+      router.push(`/waitingRoom?code=${game.code}`);
+    },
+    [dispatch, router],
+  );
 
   const handleInvalidCode = useCallback(() => {
     setIsSubmitting(false);
@@ -60,14 +63,7 @@ export default function Home() {
   useSocketEvent(socket, "invalidCode", handleInvalidCode);
   useSocketEvent(socket, "nameTaken", handleNameTaken);
 
-
   function createPlayer({ isHost }: { isHost: boolean }) {
-    if (!socket) {
-      console.error("Socket is undefined");
-      alert("Socket is undefined");
-      return;
-    }
-
     dispatch(setPlayerName(name));
     dispatch(setPlayerIsHost(isHost));
   }
@@ -95,15 +91,12 @@ export default function Home() {
     createPlayer({ isHost: false });
     console.log("Code: ", code);
     console.log("Player: ", { ...player, name });
-    socket?.emit("joinGame", { code, player: { ...player, name } });
+    socket?.emit("joinGame", { code, player: { ...player, name, isHost: false } });
   };
-
 
   return (
     <div className="min-h-screen bg-background-light flex flex-col items-center justify-center p-4">
-      <h1 className="text-4xl font-bold mb-8 text-primary-dark">
-        Welcome to the LLM Game!
-      </h1>
+      <h1 className="text-4xl font-bold mb-8 text-primary-dark">Welcome to the LLM Game!</h1>
       <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
         <input
           type="text"
@@ -131,9 +124,7 @@ export default function Home() {
           <button
             onClick={handleJoinClick}
             className={`w-1/2 py-2 px-4 rounded-md text-white transition duration-300 ${
-              isSubmitting
-                ? "bg-gray-400 cursor-not-allowed"
-                : "bg-secondary hover:bg-secondary-dark"
+              isSubmitting ? "bg-gray-400 cursor-not-allowed" : "bg-secondary hover:bg-secondary-dark"
             }`}
             disabled={isSubmitting}
           >

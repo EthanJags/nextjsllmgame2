@@ -30,6 +30,7 @@ export default function PlayersList() {
             }`}
           >
             <span className="text-gray-700">{player.name}</span>
+            {player.isHost && <span className="ml-2 text-sm text-gray-500">(Host)</span>}
           </li>
         ))}
       </ul>
