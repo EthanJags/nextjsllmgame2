@@ -8,6 +8,8 @@ import { setPlayerIsHost, setPlayerName } from "./store/slices/playerSlice";
 import { setGame } from "./store/slices/gameSlice";
 import { useSocketEvent } from "./functions/useSocketEvent";
 import { QuestionMarkBackground } from "./components/QuestionMarkBackground";
+import FloatingQuipsBackground from "./components/FloatingQuipsBackground";
+
 
 export default function Home() {
   const [name, setName] = useState<string>("");
@@ -20,6 +22,10 @@ export default function Home() {
   const socket = getSocket();
   const socketID = useAppSelector((state) => state.socket.id);
   const player = useAppSelector((state) => state.player);
+  const [showRules, setShowRules] = useState<boolean>(false);
+  const language = useAppSelector((state) => state.language);
+
+  const toggleRules = () => setShowRules(!showRules);
 
   // get code from URL for sharing link to room
   useEffect(() => {
@@ -96,9 +102,17 @@ export default function Home() {
   };
 
   return (
-<div className="min-h-screen bg-background-light bg-opacity-80 flex flex-col items-center justify-center p-4 relative z-10">
-      <h1 className="text-4xl font-bold mb-8 text-primary-dark">Welcome to the LLM Game!</h1>
+    <div className="min-h-screen bg-background-light  flex flex-col items-center justify-center p-4 relative z-10">
+      <div className="text-center mb-8 p-4 bg-black bg-opacity-50 rounded-lg animate-fade-in">
+  <h1 className="text-5xl font-extrabold mb-2 text-white text-shadow-lg">
+    Welcome to QuipQuest!
+  </h1>
+  <p className="text-2xl font-bold text-white text-shadow-md italic">
+    Where wit meets laughter!
+  </p>
+</div>
       {/* <QuestionMarkBackground /> */}
+      <FloatingQuipsBackground />
       <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
         <input
           type="text"
@@ -117,7 +131,7 @@ export default function Home() {
           placeholder="Enter game code (to join)"
           className="w-full px-4 py-2 mb-4 border border-background-dark rounded-md focus:outline-none focus:ring-2 focus:ring-primary text-gray-800 placeholder-gray-400"
         />
-        <div className="flex space-x-4">
+        <div className="flex space-x-4 mb-4">
           <button
             onClick={handleHostClick}
             className="w-1/2 bg-primary text-white py-2 px-4 rounded-md hover:bg-primary-dark transition duration-300"
@@ -134,8 +148,34 @@ export default function Home() {
             {isSubmitting ? "Joining..." : "Join"}
           </button>
         </div>
+        <button
+          onClick={toggleRules}
+          className="w-full bg-background-dark text-primary py-2 px-4 rounded-md hover:bg-background transition duration-300"
+        >
+          View Rules
+        </button>
         {error && <p className="mt-4 text-red-500 text-center">{error}</p>}
       </div>
+  
+      {showRules && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+          <div className="bg-white rounded-lg shadow-md p-6 max-w-md w-full">
+            <h2 className="text-2xl font-bold mb-4 text-primary-dark">QuipQuest Rules</h2>
+            <ul className="list-disc pl-5 mb-4 text-black">
+              <li>Players take turns answering prompts with witty responses.</li>
+              <li>Other players vote for their favorite answers.</li>
+              <li>Points are awarded based on votes received.</li>
+              <li>The player with the most points at the end wins!</li>
+            </ul>
+            <button
+              onClick={toggleRules}
+              className="w-full bg-secondary text-white py-2 px-4 rounded-md hover:bg-secondary-dark transition duration-300"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
