@@ -110,8 +110,9 @@ app.prepare().then(() => {
     }
 
     // for testing ping pong
-    socket.on("ping", () => {
+    socket.on("ping", (data) => {
       console.log("ping received");
+      console.log(data)
       socket.emit("pong");
     });
 
