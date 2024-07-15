@@ -43,7 +43,11 @@ app.prepare().then(() => {
   //   const server = createServer(app);
   //   const io = new Server(server);
   const httpServer = createServer(handler);
-  const io = new Server(httpServer);
+  const io = new Server(httpServer, {
+    cors: {
+      origin: "*",
+    }
+  });
 
   const games: Games = {};
 
