@@ -104,6 +104,12 @@ app.prepare().then(() => {
       });
     }
 
+    // for testing ping pong
+    socket.on("ping", () => {
+      console.log("ping received");
+      socket.emit("pong");
+    });
+
     // Create Game
     socket.on("createGame", (gameSettings: GameSettings, player: Player) => {
       player.id = generatePlayerId();
