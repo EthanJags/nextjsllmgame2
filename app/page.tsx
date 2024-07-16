@@ -10,7 +10,6 @@ import { useSocketEvent } from "./functions/useSocketEvent";
 import { QuestionMarkBackground } from "./components/QuestionMarkBackground";
 import FloatingQuipsBackground from "./components/FloatingQuipsBackground";
 
-
 export default function Home() {
   const [name, setName] = useState<string>("");
   const [code, setCode] = useState<string>("");
@@ -104,13 +103,9 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-background-light  flex flex-col items-center justify-center p-4 relative z-10">
       <div className="text-center mb-8 p-4 bg-black bg-opacity-50 rounded-lg animate-fade-in">
-  <h1 className="text-5xl font-extrabold mb-2 text-white text-shadow-lg">
-    Welcome to QuipQuest!
-  </h1>
-  <p className="text-2xl font-bold text-white text-shadow-md italic">
-    Where wit meets laughter!
-  </p>
-</div>
+        <h1 className="text-5xl font-extrabold mb-2 text-white text-shadow-lg">Welcome to QuipQuest!</h1>
+        <p className="text-2xl font-bold text-white text-shadow-md italic">Where wit meets laughter!</p>
+      </div>
       {/* <QuestionMarkBackground /> */}
       <FloatingQuipsBackground />
       <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
@@ -156,7 +151,7 @@ export default function Home() {
         </button>
         {error && <p className="mt-4 text-red-500 text-center">{error}</p>}
       </div>
-  
+
       {showRules && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
           <div className="bg-white rounded-lg shadow-md p-6 max-w-md w-full">

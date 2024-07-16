@@ -11,6 +11,7 @@ export default function HostSettings() {
   const socket = getSocket();
   const player = useAppSelector((state) => state.player);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadingCreateGame, setLoadingCreateGame] = useState(false);
   const socketID = useAppSelector((state) => state.socket.id);
   const playerID = useAppSelector((state) => state.player.id);
   const dispatch = useAppDispatch();
@@ -51,6 +52,8 @@ export default function HostSettings() {
     socket.emit("createGame", gameSettings, player);
     dispatch(resetGame());
 
+    // add loading state
+    setLoadingCreateGame(true);
     socket.once("gameCreated", (game) => {
       dispatch(setGame(game));
       dispatch(addPlayer(player));
@@ -77,8 +80,12 @@ export default function HostSettings() {
               <select
                 id={key}
                 value={value}
-                onChange={(e) => handleSettingChange(key as keyof GameSettings, 
-                  key === "promptDeck" ? e.target.value : Number(e.target.value))}
+                onChange={(e) =>
+                  handleSettingChange(
+                    key as keyof GameSettings,
+                    key === "promptDeck" ? e.target.value : Number(e.target.value),
+                  )
+                }
                 className="p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary text-gray-800"
               >
                 {settingOptions[key as keyof typeof settingOptions].map((option) => (
@@ -91,12 +98,16 @@ export default function HostSettings() {
           ))}
         </div>
 
-        <button
+        {!loadingCreateGame ? <button
           onClick={handleStartClick}
           className="w-full mt-6 bg-secondary hover:bg-secondary-dark text-white font-bold py-2 px-4 rounded transition duration-300 ease-in-out"
         >
           Create Game
-        </button>
+        </button> : <button
+          className="w-full mt-6 bg-primary text-white font-bold py-2 px-4 rounded transition duration-300 ease-in-out"
+          >
+          Creating Game...
+          </button>}
       </div>
     </div>
   );

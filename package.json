@@ -5,6 +5,10 @@
   "scripts": {
     "dev": "npx tsx server/server.ts",
     "debug": "DEBUG=socket.io:client,socket.io:socket,socket.io:server,socket.io-parser npx tsx server/server.ts",
+    "frontend": "next dev",
+    "fullstack": "concurrently \"npm run backend\" \"npm run frontend\"",
+    "debug:fullstack": "concurrently \"npm run debug\" \"npm run frontend\"",
+    "backend": "npx ts-node server/server.ts",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",

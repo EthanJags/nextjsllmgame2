@@ -1,22 +1,22 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from "react";
 
 const quips: string[] = [
-    "Why so serious?",
-    "May the quips be with you",
-    "To quip, or not to quip",
-    "I'll be quip",
-    "Quip happens",
-    "Quip while you're ahead",
-    "Get your quip together",
-    "Quip on truckin'",
-    "Quip it real",
-    "Quip me if you can",
-    "Stay calm and quip on",
-    "Quip like nobody's watching",
-    "Too legit to quip",
-    "Seize the quip",
-    "Quip, quip hooray",
-  ];
+  "Why so serious?",
+  "May the quips be with you",
+  "To quip, or not to quip",
+  "I'll be quip",
+  "Quip happens",
+  "Quip while you're ahead",
+  "Get your quip together",
+  "Quip on truckin'",
+  "Quip it real",
+  "Quip me if you can",
+  "Stay calm and quip on",
+  "Quip like nobody's watching",
+  "Too legit to quip",
+  "Seize the quip",
+  "Quip, quip hooray",
+];
 
 class Bubble {
   x: number;
@@ -43,7 +43,7 @@ class Bubble {
 
     ctx.font = `${this.size / 5}px Arial`;
     ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
-    ctx.textAlign = 'center';
+    ctx.textAlign = "center";
     ctx.fillText(this.quip, this.x, this.y);
   }
 
@@ -65,7 +65,7 @@ const FloatingQuipsBackground: React.FC = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
     const setCanvasSize = () => {
@@ -82,7 +82,7 @@ const FloatingQuipsBackground: React.FC = () => {
 
     const animate = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      bubbles.forEach(bubble => {
+      bubbles.forEach((bubble) => {
         bubble.update(canvas.height);
         bubble.draw(ctx);
       });
@@ -91,24 +91,27 @@ const FloatingQuipsBackground: React.FC = () => {
 
     animate();
 
-    window.addEventListener('resize', setCanvasSize);
+    window.addEventListener("resize", setCanvasSize);
 
     return () => {
-      window.removeEventListener('resize', setCanvasSize);
+      window.removeEventListener("resize", setCanvasSize);
     };
   }, []);
 
   return (
     <>
-      <canvas ref={canvasRef} style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        width: '100%',
-        height: '100%',
-        background: 'linear-gradient(to bottom, #000033, #000066)',
-        zIndex: -1,
-      }} />
+      <canvas
+        ref={canvasRef}
+        style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          width: "100%",
+          height: "100%",
+          background: "linear-gradient(to bottom, #000033, #000066)",
+          zIndex: -1,
+        }}
+      />
       <style jsx>{`
         canvas {
           position: fixed;

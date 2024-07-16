@@ -21,8 +21,6 @@ import EndGame from "../components/gameScreens/EndGame";
 import Results from "../components/gameScreens/Results";
 import PlayerInfo from "../components/PlayerInfo";
 
-
-
 export default function Game() {
   const router = useRouter();
   const socket = getSocket();
@@ -54,7 +52,7 @@ export default function Game() {
       socket.on("gameUpdate", (data: { game: Game; action?: string }) => {
         const { game, action } = data;
         if (action === "resetAnsweringTimer") {
-          setError("Not enough answers, timer has been reset, must have at least 2 submissions.")
+          setError("Not enough answers, timer has been reset, must have at least 2 submissions.");
         } else {
           setError("");
         }
@@ -62,7 +60,7 @@ export default function Game() {
         if (!game.gameActive) {
           console.log("Game no longer active");
         }
-      setIsLoading(false);
+        setIsLoading(false);
       });
 
       // if code is invalid
@@ -71,7 +69,6 @@ export default function Game() {
         alert("Game no longer active");
         router.push("/");
       });
-
     } else {
       if (!alertShown.current) {
         alert("No socket ID or game code");
@@ -104,9 +101,6 @@ export default function Game() {
     return () => clearInterval(interval);
   }, [timerActive, timeRemaining, socket, game.code]);
 
-
-  
-
   if (isLoading) {
     return <div className="flex justify-center items-center h-screen">Loading...</div>;
   }
@@ -117,12 +111,11 @@ export default function Game() {
 
   const handleLeaveGame = () => {
     if (window.confirm(`Are you sure you want to ${isHost ? "end" : "leave"} the game?`)) {
-    socket.emit("leaveGame", { playerId: player.id });
-    dispatch(resetGame());
-    router.push("/");
+      socket.emit("leaveGame", { playerId: player.id });
+      dispatch(resetGame());
+      router.push("/");
     }
   };
-  
 
   const renderGameContent = () => {
     switch (currentStage) {
@@ -147,7 +140,7 @@ export default function Game() {
 
   const toggleShowPlayerInfo = () => {
     setShowPlayerInfo(!showPlayerInfo);
-  }
+  };
 
   return (
     <div className="min-h-screen bg-indigo-600 p-4">
@@ -171,34 +164,33 @@ export default function Game() {
       </div>
 
       {/* Game Content */}
-      <div className="bg-white rounded-lg shadow-md p-6">{renderGameContent()}
-      <div>{error}</div>
-      <div className="mt-6 flex justify-center">
-        <button
-          onClick={handleLeaveGame}
-          className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50"
-        >
-          {isHost ? "End Game" : "Leave Game"}
-        </button>
-      </div>
-      </div>
-      <button onClick={toggleShowPlayerInfo}>
-        Player Info
-      </button>
-
-      {showPlayerInfo && (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-        <div className="bg-white rounded-lg shadow-md p-6 max-w-md w-full">
-          <PlayerInfo players={game.players} socket={socket} currentPlayerId={playerId} />
+      <div className="bg-white rounded-lg shadow-md p-6">
+        {renderGameContent()}
+        <div>{error}</div>
+        <div className="mt-6 flex justify-center">
           <button
-            onClick={toggleShowPlayerInfo}
-            className="mt-4 bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-lg transition duration-300 ease-in-out"
+            onClick={handleLeaveGame}
+            className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50"
           >
-            Close
+            {isHost ? "End Game" : "Leave Game"}
           </button>
         </div>
       </div>
-    )}
+      <button onClick={toggleShowPlayerInfo}>Player Info</button>
+
+      {showPlayerInfo && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+          <div className="bg-white rounded-lg shadow-md p-6 max-w-md w-full">
+            <PlayerInfo players={game.players} socket={socket} currentPlayerId={playerId} />
+            <button
+              onClick={toggleShowPlayerInfo}
+              className="mt-4 bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-lg transition duration-300 ease-in-out"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

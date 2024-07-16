@@ -33,7 +33,7 @@ const PlayerInfo: React.FC<PlayerInfoProps> = ({ players, socket, currentPlayerI
             <div className="flex items-center">
               <span className="font-bold text-primary mr-4">{player.score}</span>
               {currentPlayer.isHost && currentPlayer.id !== player.id && (
-                <button 
+                <button
                   onClick={() => handleKickPlayer(player.id)}
                   className="bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-2 rounded text-sm transition duration-300"
                 >

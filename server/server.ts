@@ -20,13 +20,13 @@ export const gameTimers: { [gameRoom: string]: NodeJS.Timeout } = {};
 interface CustomSocket extends Socket {
   playerId: string;
 }
+// took this out to separate frontend anc backend *************
+// const dev = process.env.NODE_ENV !== "production";
+// const app = next({ dev });
+// const handler = app.getRequestHandler();
 
-const dev = process.env.NODE_ENV !== "production";
-const app = next({ dev });
-const handler = app.getRequestHandler();
-
-const hostname = "localhost";
-const PORT = process.env.PORT || 3000; // process.env.PORT is for Heroku
+// const hostname = "localhost";
+const PORT = process.env.PORT || 2999; // process.env.PORT is for Heroku
 
 function getSocketIdFromPlayerId(playerId: ID) {
   console.log("playerConnections: ", playerConnections);
@@ -37,17 +37,14 @@ function getSocketIdFromPlayerId(playerId: ID) {
   return null;
 }
 
-app.prepare().then(() => {
+// app.prepare().then(() => {
   console.log("Node app prepared");
-  //   const app = express();
-  //   const server = createServer(app);
-  //   const io = new Server(server);
-  const httpServer = createServer(handler);
+  const httpServer = createServer(); // took out handler as an arg to separate frontend and backend
   const io = new Server(httpServer, {
     cors: {
       origin: "*",
       methods: ["GET", "POST"],
-    }
+    },
   });
 
   const games: Games = {};
@@ -55,6 +52,7 @@ app.prepare().then(() => {
   //   io.use(wildcard());
   io.on("connection", (socket) => {
     console.log("a user connected (server)", socket.id);
+    socket.emit("connected", null);
 
     // update playerID socketID map
     let playerId = socket.handshake.auth.playerId;
@@ -112,7 +110,7 @@ app.prepare().then(() => {
     // for testing ping pong
     socket.on("ping", (data) => {
       console.log("ping received");
-      console.log(data)
+      console.log(data);
       socket.emit("pong");
     });
 
@@ -195,14 +193,14 @@ app.prepare().then(() => {
       const gameRoom: number = game.code;
       const playerCount = game.players.length;
       const answerCount = Object.keys(game.latestAnswers).length;
-    
+
       if (playerCount === 1 || answerCount >= 2) {
         prepareVotingStage(game);
       } else {
         // Not enough answers, reset the timer
         game.timeRemaining = game.gameSettings.timePerQuestion;
-        io.to(gameRoom.toString()).emit("gameUpdate", { 
-          game: game, 
+        io.to(gameRoom.toString()).emit("gameUpdate", {
+          game: game,
           action: "resetAnsweringTime",
         });
         // Restart the timer
@@ -280,11 +278,11 @@ app.prepare().then(() => {
         game.players = game.players.filter((player) => player.id !== playerId);
         // console.log("after player leaving: ", game.players)
         // emit player removed to all clients in game
-        io.to(gameRoom.toString()).emit("gameUpdate",  { game: game, action: "playerLeft" });
+        io.to(gameRoom.toString()).emit("gameUpdate", { game: game, action: "playerLeft" });
       }
       // leave game room
       socket.leave(gameRoom.toString());
-    })
+    });
 
     // next round
     socket.on("nextRound", () => {
@@ -451,6 +449,7 @@ app.prepare().then(() => {
       process.exit(1);
     })
     .listen(PORT, () => {
-      console.log(`> Ready on http://${hostname}:${PORT}`);
+      console.log(`> backend Ready on ${PORT}`);
+      console.log("access at: " + `http://localhost:${PORT}`);
     });
-});
+
