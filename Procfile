@@ -1,1 +1,1 @@
-web: npx tsx server/server.ts
+web: npm run backend
