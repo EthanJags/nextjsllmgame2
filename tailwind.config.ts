@@ -6,38 +6,32 @@ const config: Config = {
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
-  darkMode: "class", // Enable class-based dark mode
+  darkMode: "class",
   theme: {
     extend: {
-      backgroundImage: {
-        "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
-        "gradient-conic": "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
-      },
       colors: {
         primary: {
-          light: "#4F46E5", // indigo-600
-          DEFAULT: "#4338CA", // indigo-700
-          dark: "#3730A3", // indigo-800
+          light: 'rgba(var(--color-primary-light), <alpha-value>)',
+          DEFAULT: 'rgba(var(--color-primary), <alpha-value>)',
+          dark: 'rgba(var(--color-primary-dark), <alpha-value>)',
         },
         secondary: {
-          light: "#10B981", // emerald-500
-          DEFAULT: "#059669", // emerald-600
-          dark: "#047857", // emerald-700
+          light: 'rgba(var(--color-secondary-light), <alpha-value>)',
+          DEFAULT: 'rgba(var(--color-secondary), <alpha-value>)',
+          dark: 'rgba(var(--color-secondary-dark), <alpha-value>)',
         },
         background: {
-          light: "#F3F4F6", // gray-100
-          DEFAULT: "#E5E7EB", // gray-200
-          dark: "#D1D5DB", // gray-300
+          light: 'rgba(var(--color-background-light), <alpha-value>)',
+          DEFAULT: 'rgba(var(--color-background), <alpha-value>)',
+          dark: 'rgba(var(--color-background-dark), <alpha-value>)',
         },
         text: {
-          primary: "#1F2937", // equivalent to gray-800
-          placeholder: "#9CA3AF", // equivalent to gray-400
+          primary: 'rgba(var(--color-text-primary), <alpha-value>)',
+          placeholder: 'rgba(var(--color-text-placeholder), <alpha-value>)',
         },
-        // Add specific dark mode colors
-        dark: {
-          background: "#1F2937", // dark background
-          text: "#F9FAFB", // light text for dark mode
-        },
+        foreground: 'rgba(var(--color-foreground), <alpha-value>)',
+        'background-start': 'rgba(var(--color-background-start), <alpha-value>)',
+        'background-end': 'rgba(var(--color-background-end), <alpha-value>)',
       },
     },
   },

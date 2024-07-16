@@ -3,34 +3,74 @@
 @tailwind utilities;
 
 :root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
+  --background: 255, 255, 255;
+
+
+  --color-foreground: 0, 0, 0; /* Black */
+  --color-background-start: 214, 219, 220; /* Very light gray */
+  --color-background-end: 255, 255, 255; /* White */
+
+  --color-primary-light: 79, 70, 229; /* Bright indigo */
+  --color-primary: 67, 56, 202; /* Indigo */
+  --color-primary-dark: 55, 48, 163; /* Dark indigo */
+
+  --color-secondary-light: 16, 185, 129; /* Bright teal */
+  --color-secondary: 5, 150, 105; /* Teal */
+  --color-secondary-dark: 4, 120, 87; /* Dark teal */
+
+  --color-background-light: 243, 244, 246; /* Very light gray (almost white) */
+  --color-background: 229, 231, 235; /* Light gray */
+  --color-background-dark: 209, 213, 219; /* Medium light gray */
+
+  --color-text-primary: 31, 41, 55; /* Very dark gray (almost black) */
+  --color-text-placeholder: 156, 163, 175; /* Medium gray */
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 0, 0, 0;
-    --background-end-rgb: 0, 0, 0;
+    --background: 18, 18, 18;
+    --low-button-background: 10, 10, 10;
+    
+
+    --color-foreground: 255, 255, 255; /* White */
+    --color-background-start: 0, 0, 0; /* Black */
+    --color-background-end: 0, 0, 0; /* Black */
+
+    --color-primary-light: 55, 48, 163; /* Dark indigo */
+    --color-primary: 67, 56, 202; /* Indigo */
+    --color-primary-dark: 79, 70, 229; /* Bright indigo */
+
+    --color-secondary-light: 4, 120, 87; /* Dark teal */
+    --color-secondary: 5, 150, 105; /* Teal */
+    --color-secondary-dark: 16, 185, 129; /* Bright teal */
+
+    --color-background-light: 31, 41, 55; /* Very dark gray */
+    --color-background: 17, 24, 39; /* Almost black */
+    --color-background-dark: 10, 10, 10; /* Black */
+
+    --color-text-primary: 249, 250, 251; /* Very light gray (almost white) */
+    --color-text-placeholder: 107, 114, 128; /* Medium gray */
   }
 }
+
 
 body {
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(to bottom, transparent, rgb(var(--background-end-rgb))) rgb(var(--background-start-rgb));
+  color: rgb(var(--color-foreground));
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    rgb(var(--color-background-end))
+  ) rgb(var(--color-background-start));
 }
 
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
+.text-balance {
+  text-wrap: balance;
+}
 
-  input[type="number"]::-webkit-inner-spin-button,
-  input[type="number"]::-webkit-outer-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-  }
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 
 @keyframes fadeIn {
