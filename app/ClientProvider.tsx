@@ -6,10 +6,12 @@ import { PersistGate } from "redux-persist/integration/react";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import { usePathname } from "next/navigation";
+import { useEffect } from "react";
 
 export default function ClientProvider({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isHomePage = pathname === "/";
+
 
   return (
     <Provider store={store}>

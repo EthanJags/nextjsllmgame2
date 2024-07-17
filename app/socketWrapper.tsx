@@ -8,12 +8,21 @@ import { setConnected, setSocketId } from "./store/slices/socketSlice";
 import { setPlayerID } from "./store/slices/playerSlice";
 import { initSocket, getSocket, disconnectSocket } from "./functions/socketManager";
 
+
 export default function SocketWrapper({ children }: { children: React.ReactNode }) {
   console.log("SocketWrapper mounted");
   const dispatch = useAppDispatch();
   const persistedId = useAppSelector((state) => state.socket.id);
   const socketRef = useRef<Socket | null>(null);
   const playerId = useAppSelector((state) => state.player.id);
+
+  const theme = useAppSelector((state) => state.theme);
+
+  // this will change the css class on the html element to toggle dark mode when the redux theme changes
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', theme === "dark");
+    console.log("Theme: ", theme);
+  }, [theme]);
 
   useEffect(() => {
     if (!socketRef.current) {

@@ -7,6 +7,7 @@ import { Socket } from "socket.io";
 import { getRoom, generateUniqueRoomCode, getRandomQuestion, leaveAllGameRooms } from "./utils";
 import { current } from "@reduxjs/toolkit";
 import { startTimer, cancelTimer } from "./utils/timerManager";
+import { setInterval } from "timers";
 const scorePerVote = 100;
 
 interface PlayerConnection {
@@ -20,6 +21,23 @@ export const gameTimers: { [gameRoom: string]: NodeJS.Timeout } = {};
 interface CustomSocket extends Socket {
   playerId: string;
 }
+
+const games: Games = {};
+
+function removeOldGames() {
+  const threeHoursInMs = 3 * 60 * 60 * 1000;
+  const currentTime = Date.now();
+
+  for (const [gameCode, game] of Object.entries(games)) {
+    if (currentTime - game.startTime > threeHoursInMs) {
+      delete games[Number(gameCode)];
+      console.log(`Removed game ${gameCode} due to inactivity`);
+    }
+  }
+}
+// Set up interval to remove old games, every 15 minutes
+setInterval(removeOldGames, 15 * 60 * 1000);
+
 // took this out to separate frontend anc backend *************
 // const dev = process.env.NODE_ENV !== "production";
 // const app = next({ dev });
@@ -46,8 +64,6 @@ function getSocketIdFromPlayerId(playerId: ID) {
       methods: ["GET", "POST"],
     },
   });
-
-  const games: Games = {};
 
   //   io.use(wildcard());
   io.on("connection", (socket) => {
@@ -134,6 +150,7 @@ function getSocketIdFromPlayerId(playerId: ID) {
         currentQuestion: "",
         timeRemaining: 0,
         chatHistory: [],
+        startTime: Date.now(),
       };
       // add game to games
       games[gameCode] = game;

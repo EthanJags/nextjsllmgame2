@@ -53,6 +53,7 @@ declare interface Game {
   currentQuestion: string;
   timeRemaining: number;
   chatHistory: ChatMessage[];
+  startTime: number;
 }
 
 // declare interface BackendGame {

@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { useTheme } from "next-themes";
+import { toggleTheme } from "../store/slices/themeSlice";
+import { useAppDispatch, useAppSelector } from "../store/constants/reduxTypes";
 
 const DarkModeToggle: React.FC = () => {
   const [mounted, setMounted] = useState(false);
-  const { theme, setTheme } = useTheme();
+  const theme = useAppSelector((state) => state.theme);
+  const dispatch = useAppDispatch();
+
 
   useEffect(() => setMounted(true), []);
 
@@ -12,7 +15,7 @@ const DarkModeToggle: React.FC = () => {
   return (
     <button
       className="p-2 rounded-md hover:bg-gray-700 dark:hover:bg-gray-200 transition-colors duration-200"
-      onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+      onClick={() => dispatch(toggleTheme())}
       aria-label="Toggle Dark Mode"
     >
       {theme === "light" ? (

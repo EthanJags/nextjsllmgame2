@@ -26,6 +26,7 @@ const initialState: Game = {
   currentQuestion: "question",
   timeRemaining: 0,
   chatHistory: [],
+  startTime: -1,
 };
 
 const resetState: Game = {
@@ -47,6 +48,7 @@ const resetState: Game = {
   currentQuestion: "question",
   timeRemaining: 0,
   chatHistory: [],
+  startTime: -1,
 };
 
 const gameSlice = createSlice({
