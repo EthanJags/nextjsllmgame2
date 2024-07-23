@@ -106,7 +106,7 @@ export default function Home() {
       <div className="text-center mb-8 p-4 bg-black bg-opacity-50 rounded-lg animate-fade-in">
   <h1 className="text-5xl font-extrabold mb-2 text-white text-shadow-lg">
     Welcome to QuipQuest!
-  </h1>
+    </h1>
   <p className="text-2xl font-bold text-white text-shadow-md italic">
     Where wit meets laughter!
   </p>
